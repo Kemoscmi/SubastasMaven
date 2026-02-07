@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AssemblyName>Maven.Application</AssemblyName>
+		<RootNamespace>Maven.Application</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="16.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Maven.Infraestructure\Maven.Infraestructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Profiles\" />
+	</ItemGroup>
+
+</Project>
