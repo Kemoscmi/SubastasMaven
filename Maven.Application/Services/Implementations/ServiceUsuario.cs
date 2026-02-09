@@ -27,5 +27,25 @@ namespace Maven.Application.Services.Implementations
                 FechaRegistro = u.FechaRegistro
             }).ToList();
         }
+        public async Task<UsuarioDetailDto?> GetByIdAsync(int id)
+        {
+            var u = await _repo.GetByIdAsync(id);
+            if (u == null) return null;
+
+            return new UsuarioDetailDto
+            {
+                UsuarioId = u.UsuarioId,
+                NombreCompleto = u.NombreCompleto,
+                Correo = u.Correo,
+                Rol = u.Rol?.NombreRol ?? "(sin rol)",
+                Estado = u.EstadoUsuario?.NombreEstado ?? "(sin estado)",
+                FechaRegistro = u.FechaRegistro,
+
+                // ✅ LINQ (campos calculados)
+                CantidadSubastasCreadas = u.Subasta.Count(),
+                CantidadPujasRealizadas = u.Puja.Count()
+            };
+        }
+
     }
 }
