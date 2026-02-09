@@ -1,0 +1,53 @@
+﻿@model List<Maven.Application.DTOs.JoyaListDto>
+@{
+    ViewData["Title"] = "Objetos Subastables";
+}
+
+<h2 class="mb-3">Objetos Subastables</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay objetos registrados.</div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Imagen</th>
+                <th>Categorías</th>
+                <th>Condición</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var j in Model)
+            {
+                <tr>
+                    <td>@j.Nombre</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(j.ImagenPrincipal))
+                        {
+                            <img src="@j.ImagenPrincipal" width="60" />
+                        }
+                        else
+                        {
+                            <span>(sin imagen)</span>
+                        }
+                    </td>
+                    <td>@j.Categorias</td>
+                    <td>@j.Condicion</td>
+                    <td>@j.Estado</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           asp-action="Detalle" asp-route-id="@j.JoyaId">
+                            Ver detalle
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

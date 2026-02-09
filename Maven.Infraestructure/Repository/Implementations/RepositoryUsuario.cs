@@ -31,7 +31,10 @@ namespace Maven.Infraestructure.Repository.Implementations
                 .AsNoTracking()
                 .Include(u => u.Rol)
                 .Include(u => u.EstadoUsuario)
+                .Include(u => u.Subasta) // para contar subastas creadas
+                .Include(u => u.Puja)    // para contar pujas realizadas
                 .FirstOrDefaultAsync(u => u.UsuarioId == id);
         }
+
     }
 }

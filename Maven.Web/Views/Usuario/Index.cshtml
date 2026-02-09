@@ -35,6 +35,13 @@ else
                     <td>@u.Rol</td>
                     <td>@u.Estado</td>
                     <td>@u.FechaRegistro.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           asp-action="Detalle" asp-route-id="@u.UsuarioId">
+                            Ver detalle
+                        </a>
+                    </td>
+
                 </tr>
             }
         </tbody>

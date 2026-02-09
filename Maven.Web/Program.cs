@@ -11,6 +11,8 @@ using Maven.Application.Services.Implementations;
 using Maven.Infraestructure.Repository.Interfaces;
 using Maven.Infraestructure.Repository.Implementations;
 
+
+
 Directory.CreateDirectory("Logs");
 
 // =======================
@@ -68,6 +70,14 @@ builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
 
 // Services
 builder.Services.AddScoped<IServiceUsuario, ServiceUsuario>();
+
+// Repositories
+builder.Services.AddScoped<IRepositoryJoya, RepositoryJoya>();
+
+// Services
+builder.Services.AddScoped<IServiceJoya, ServiceJoya>();
+
+
 
 // =======================
 // AutoMapper (si luego lo ocupas)
