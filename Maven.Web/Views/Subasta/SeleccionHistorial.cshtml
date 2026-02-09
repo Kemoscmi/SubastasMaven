@@ -1,0 +1,71 @@
+﻿@model List<Maven.Web.Models.SubastaHistorialSelectVm>
+@{
+    ViewData["Title"] = "Seleccionar Subasta - Historial de Pujas";
+}
+
+<h2 class="mb-3">Historial de Pujas</h2>
+<p class="text-muted">Seleccioná una subasta para ver el historial de pujas.</p>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay subastas para mostrar.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Objeto</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Pujas</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td style="width:110px;">
+                            @if (!string.IsNullOrWhiteSpace(s.ImagenUrl))
+                            {
+                                <img src="@s.ImagenUrl" class="img-fluid rounded" style="max-height:70px;" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin imagen</span>
+                            }
+                        </td>
+
+                        <td>@s.Objeto</td>
+
+                        <td>
+                            <span class="badge @(s.Estado == "ACTIVA" ? "bg-primary" :
+                                            s.Estado == "FINALIZADA" ? "bg-success" : "bg-danger")">
+                                @s.Estado
+                            </span>
+                        </td>
+
+                        <td>@s.FechaRef.ToString("yyyy-MM-dd")</td>
+
+                        <td>
+                            <span class="badge bg-dark">@s.CantidadPujas</span>
+                        </td>
+
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-controller="Subasta"
+                               asp-action="HistorialPujas"
+                               asp-route-id="@s.SubastaId">
+                                Ver historial
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+        

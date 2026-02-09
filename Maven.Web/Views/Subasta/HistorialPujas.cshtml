@@ -1,0 +1,47 @@
+﻿@model List<Maven.Application.DTOs.PujaListDto>
+@{
+    ViewData["Title"] = "Historial de Pujas";
+    var subastaId = (int)ViewBag.SubastaId;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Historial de Pujas - Subasta #@subastaId</h2>
+
+    <a class="btn btn-sm btn-outline-primary"
+       asp-controller="Subasta" asp-action="Detalle" asp-route-id="@subastaId">
+        Volver al detalle
+    </a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">Esta subasta no tiene pujas registradas.</div>
+}
+else
+{
+    <div class="alert alert-secondary">
+        Orden: <strong>Descendente</strong> por Fecha/Hora (más recientes primero)
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Monto ofertado</th>
+                    <th>Fecha y hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.Usuario</td>
+                        <td>₡@p.MontoOfertado</td>
+                        <td>@p.FechaHora.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

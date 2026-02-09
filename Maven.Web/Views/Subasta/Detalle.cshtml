@@ -1,0 +1,61 @@
+﻿@model Maven.Application.DTOs.SubastaDetalleDto
+@{
+    ViewData["Title"] = "Detalle de Subasta";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Detalle de Subasta #@Model.SubastaId</h2>
+
+    <a class="btn btn-sm btn-outline-dark"
+       asp-controller="Subasta" asp-action="HistorialPujas" asp-route-id="@Model.SubastaId">
+        Ver historial de pujas
+    </a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Objeto</h5>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
+                {
+                    <img src="@Model.ImagenUrl" class="img-fluid rounded mb-2" />
+                }
+
+                <div><strong>@Model.NombreObjeto</strong></div>
+                <div class="text-muted">Condición: @Model.Condicion</div>
+
+                @if (Model.Categorias != null && Model.Categorias.Any())
+                {
+                    <div class="mt-2">
+                        <div class="small text-muted mb-1">Categorías</div>
+                        @foreach (var c in Model.Categorias)
+                        {
+                            <span class="badge bg-secondary me-1">@c</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Subasta</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-2"><strong>Inicio:</strong> @Model.FechaInicio.ToString("yyyy-MM-dd HH:mm")</div>
+                    <div class="col-md-6 mb-2"><strong>Cierre:</strong> @Model.FechaCierre.ToString("yyyy-MM-dd HH:mm")</div>
+
+                    <div class="col-md-6 mb-2"><strong>Precio base:</strong> ₡@Model.PrecioBase</div>
+                    <div class="col-md-6 mb-2"><strong>Incremento mínimo:</strong> ₡@Model.IncrementoMinimo</div>
+
+                    <div class="col-md-6 mb-2"><strong>Estado:</strong> @Model.EstadoActual</div>
+                    <div class="col-md-6 mb-2"><strong>Total de pujas:</strong> @Model.CantidadTotalPujas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

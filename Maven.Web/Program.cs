@@ -11,6 +11,13 @@ using Maven.Application.Services.Implementations;
 using Maven.Infraestructure.Repository.Interfaces;
 using Maven.Infraestructure.Repository.Implementations;
 
+// DI Subastas 
+using Maven.Application.Services.Implementations;
+using Maven.Application.Services.Interfaces;
+using Maven.Infraestructure.Repository.Implementations;
+using Maven.Infraestructure.Repository.Interfaces;
+
+
 Directory.CreateDirectory("Logs");
 
 // =======================
@@ -65,9 +72,12 @@ builder.Services.AddControllersWithViews();
 
 // Repositories
 builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
+builder.Services.AddScoped<IRepositorySubasta, RepositorySubasta>();
+builder.Services.AddScoped<IRepositoryPuja, RepositoryPuja>();
 
 // Services
 builder.Services.AddScoped<IServiceUsuario, ServiceUsuario>();
+builder.Services.AddScoped<IServiceSubasta, ServiceSubasta>();
 
 // =======================
 // AutoMapper (si luego lo ocupas)
