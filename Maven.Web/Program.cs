@@ -11,11 +11,6 @@ using Maven.Application.Services.Implementations;
 using Maven.Infraestructure.Repository.Interfaces;
 using Maven.Infraestructure.Repository.Implementations;
 
-// DI Subastas 
-using Maven.Application.Services.Implementations;
-using Maven.Application.Services.Interfaces;
-using Maven.Infraestructure.Repository.Implementations;
-using Maven.Infraestructure.Repository.Interfaces;
 
 
 Directory.CreateDirectory("Logs");
@@ -79,6 +74,14 @@ builder.Services.AddScoped<IRepositoryPuja, RepositoryPuja>();
 builder.Services.AddScoped<IServiceUsuario, ServiceUsuario>();
 builder.Services.AddScoped<IServiceSubasta, ServiceSubasta>();
 
+// Repositories
+builder.Services.AddScoped<IRepositoryJoya, RepositoryJoya>();
+
+// Services
+builder.Services.AddScoped<IServiceJoya, ServiceJoya>();
+
+
+
 // =======================
 // AutoMapper (si luego lo ocupas)
 // =======================
@@ -91,7 +94,7 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServerDataB
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "No se encontró la cadena de conexión 'SqlServerDataBase' en appsettings.json / appsettings.Development.json.");
+        "No se encontrÃ³ la cadena de conexiÃ³n 'SqlServerDataBase' en appsettings.json / appsettings.Development.json.");
 }
 
 builder.Services.AddDbContext<MavenContext>(options =>

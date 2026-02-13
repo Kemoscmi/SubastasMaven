@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Maven.Application.Services.Interfaces;
+﻿using Maven.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Maven.Web.Controllers
 {
-    public class UsuarioController : Controller
+    public class JoyaController : Controller
     {
-        private readonly IServiceUsuario _service;
-
-        public UsuarioController(IServiceUsuario service)
+        private readonly IServiceJoya _service;
+        public JoyaController(IServiceJoya service)
         {
             _service = service;
         }
@@ -23,8 +22,6 @@ namespace Maven.Web.Controllers
             var data = await _service.GetByIdAsync(id);
             if (data == null) return NotFound();
             return View(data);
-        }   
-
-
+        }
     }
 }
