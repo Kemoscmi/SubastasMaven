@@ -67,9 +67,12 @@ builder.Services.AddControllersWithViews();
 
 // Repositories
 builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
+builder.Services.AddScoped<IRepositorySubasta, RepositorySubasta>();
+builder.Services.AddScoped<IRepositoryPuja, RepositoryPuja>();
 
 // Services
 builder.Services.AddScoped<IServiceUsuario, ServiceUsuario>();
+builder.Services.AddScoped<IServiceSubasta, ServiceSubasta>();
 
 // Repositories
 builder.Services.AddScoped<IRepositoryJoya, RepositoryJoya>();
@@ -91,7 +94,7 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServerDataB
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "No se encontró la cadena de conexión 'SqlServerDataBase' en appsettings.json / appsettings.Development.json.");
+        "No se encontrÃ³ la cadena de conexiÃ³n 'SqlServerDataBase' en appsettings.json / appsettings.Development.json.");
 }
 
 builder.Services.AddDbContext<MavenContext>(options =>

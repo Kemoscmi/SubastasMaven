@@ -1,0 +1,55 @@
+﻿@model List<Maven.Application.DTOs.SubastaActivaListDto>
+@{
+    ViewData["Title"] = "Subastas Activas";
+}
+
+<h2 class="mb-3">Subastas Activas</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay subastas activas.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Objeto</th>
+                    <th>Inicio</th>
+                    <th>Cierre Estimado</th>
+                    <th>Pujas</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td style="width:110px;">
+                            @if (!string.IsNullOrWhiteSpace(s.ImagenUrl))
+                            {
+                                <img src="@s.ImagenUrl" class="img-fluid rounded" style="max-height:70px;" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin imagen</span>
+                            }
+                        </td>
+                        <td>@s.Objeto</td>
+                        <td>@s.FechaInicio.ToString("yyyy-MM-dd")</td>
+                        <td>@s.FechaEstimadaCierre.ToString("yyyy-MM-dd")</td>
+                        <td><span class="badge bg-dark">@s.CantidadPujas</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-primary"
+                               asp-controller="Subasta" asp-action="Detalle" asp-route-id="@s.SubastaId">
+                                Ver detalle
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
