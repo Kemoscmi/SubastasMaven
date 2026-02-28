@@ -14,9 +14,17 @@ namespace Maven.Infraestructure.Repository.Implementations
             _db = db;
         }
 
-        public async Task<List<Usuario>> GetAllAsync()
+        public async Task<Usuario?> FindByIdAsync(int id)
         {
-            // Incluimos Rol y EstadoUsuario para mostrar nombres
+            return await _db.Usuario
+                .AsNoTracking()
+                .Include(u => u.Rol)
+                .Include(u => u.EstadoUsuario)
+                .FirstOrDefaultAsync(u => u.UsuarioId == id);
+        }
+
+        public async Task<ICollection<Usuario>> ListAsync()
+        {
             return await _db.Usuario
                 .AsNoTracking()
                 .Include(u => u.Rol)
@@ -25,16 +33,41 @@ namespace Maven.Infraestructure.Repository.Implementations
                 .ToListAsync();
         }
 
-        public async Task<Usuario?> GetByIdAsync(int id)
+  
+
+        public async Task<int> AddAsync(Usuario entity)
         {
-            return await _db.Usuario
-                .AsNoTracking()
-                .Include(u => u.Rol)
-                .Include(u => u.EstadoUsuario)
-                .Include(u => u.Subasta) // para contar subastas creadas
-                .Include(u => u.Puja)    // para contar pujas realizadas
-                .FirstOrDefaultAsync(u => u.UsuarioId == id);
+            _db.Usuario.Add(entity);
+            await _db.SaveChangesAsync();
+            return entity.UsuarioId;
         }
 
+        public async Task UpdateAsync(Usuario entity)
+        {
+            _db.Usuario.Update(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _db.Usuario.FindAsync(id);
+            if (entity is null) return;
+
+            _db.Usuario.Remove(entity);
+            await _db.SaveChangesAsync();
+        }
+        //  cantidad de subastas creadas por este usuario (como vendedor)
+        public async Task<int> CountSubastasCreadasAsync(int usuarioId)
+        {
+            return await _db.Subasta
+                .CountAsync(s => s.VendedorId == usuarioId);
+        }
+
+        //  cantidad de pujas realizadas por este usuario (como comprador)
+        public async Task<int> CountPujasRealizadasAsync(int usuarioId)
+        {
+            return await _db.Puja
+                .CountAsync(p => p.CompradorId == usuarioId);
+        }
     }
 }

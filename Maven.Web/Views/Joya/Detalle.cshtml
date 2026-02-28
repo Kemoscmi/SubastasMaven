@@ -1,167 +1,185 @@
-﻿@model Maven.Application.DTOs.JoyaDetailDto
+﻿@model Maven.Application.DTOs.JoyaDTO
+
 @{
-    ViewData["Title"] = "Detalle del Objeto";
+    ViewData["Title"] = "Detalle de joya";
+
+    var estadoNombre = Model.EstadoObjeto?.NombreEstado ?? "No disponible";
+    var condicionNombre = Model.CondicionObjeto?.NombreCondicion ?? "No disponible";
+    var vendedorNombre = Model.Vendedor?.NombreCompleto ?? "No disponible";
+
+    var estadoUpper = estadoNombre.ToUpper();
+    var claseEstado = estadoUpper.Contains("ACTIV") ? "text-bg-success"
+                    : estadoUpper.Contains("INACT") ? "text-bg-danger"
+                    : "text-bg-secondary";
 }
 
-<div class="container mt-4">
+<nav class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Inicio</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Joya" asp-action="Index" class="text-decoration-none">Joyas</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+    </ol>
+</nav>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="mb-0">Detalle del Objeto</h2>
-        </div>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Detalle de joya</h1>
+        <p class="text-muted mb-0">Información completa de la joya seleccionada.</p>
+    </div>
 
-        <a class="btn btn-outline-secondary" asp-action="Index">
-            Volver
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.JoyaId" class="btn btn-outline-primary">
+            <i class="bi bi-pencil-square me-1"></i> Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver
         </a>
     </div>
+</div>
+<article class="card shadow-sm border-0">
+    <div class="card-body p-4">
 
-    <div class="row g-3">
+        <!-- Encabezado básico -->
+        <header class="mb-3">
+            <h2 class="h4 fw-semibold mb-1">@Model.Nombre</h2>
 
-        <!-- Columna izquierda: Imagen principal + galería -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Imágenes</strong>
-                </div>
-                <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="badge text-bg-light border">
+                    <i class="bi bi-person me-1"></i>
+                    @vendedorNombre
+                </span>
 
-                    @if (Model.Imagenes == null || !Model.Imagenes.Any())
+                <span class="badge @claseEstado">
+                    <i class="bi bi-shield-check me-1"></i>
+                    @estadoNombre
+                </span>
+
+                <span class="badge text-bg-warning text-dark">
+                    <i class="bi bi-star me-1"></i>
+                    @condicionNombre
+                </span>
+            </div>
+        </header>
+
+        <hr class="my-3" />
+
+        <!--  TODAS las imágenes de la joya -->
+        <section class="mb-4">
+            <h3 class="h5 mb-3">Imágenes de la joya</h3>
+
+            @if (Model.JoyaImagen != null && Model.JoyaImagen.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var img in Model.JoyaImagen)
                     {
-                        <div class="alert alert-info mb-0">Este objeto no tiene imágenes registradas.</div>
+                        <div class="col-6 col-md-3">
+                            <div class="ratio ratio-1x1 border rounded overflow-hidden">
+                                <img src="@img.UrlImagen"
+                                     alt="@Model.Nombre"
+                                     class="w-100 h-100"
+                                     style="object-fit: cover;" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">(Esta joya aún no tiene imágenes registradas.)</p>
+            }
+        </section>
+
+        <hr class="my-3" />
+
+        <!--  Información descriptiva + CATEGORÍAS -->
+        <section class="mb-4">
+            <h3 class="h5 mb-3">Información de la joya</h3>
+
+            <dl class="row mb-0">
+                <dt class="col-12 col-md-4 text-muted">ID Joya</dt>
+                <dd class="col-12 col-md-8">
+                    <span class="badge text-bg-light border">@Model.JoyaId</span>
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Descripción</dt>
+                <dd class="col-12 col-md-8">
+                    @Model.Descripcion
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Fecha de registro</dt>
+                <dd class="col-12 col-md-8">
+                    @Model.FechaRegistro.ToString("dd/MM/yyyy")
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Categorías</dt>
+                <dd class="col-12 col-md-8">
+                    @if (!string.IsNullOrWhiteSpace(Model.CategoriasTexto))
+                    {
+                        <span class="badge text-bg-secondary">@Model.CategoriasTexto</span>
                     }
                     else
                     {
-                        <!-- Imagen principal -->
-                        <img src="@Model.Imagenes.First()"
-                             class="img-fluid rounded border mb-3"
-                             style="width:100%; height: 320px; object-fit: cover;"
-                             alt="Imagen principal" />
+                        <span class="text-muted">Sin categorías asociadas.</span>
+                    }
+                </dd>
+            </dl>
+        </section>
 
-                        <!-- Mini galería -->
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach (var img in Model.Imagenes)
+        <hr class="my-3" />
+
+       
+        <section class="mb-4">
+            <h3 class="h5 mb-3">Historial de subastas de esta joya</h3>
+
+            @if (Model.Subasta != null && Model.Subasta.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Id Subasta</th>
+                                <th>Fecha inicio</th>
+                                <th>Fecha cierre</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Subasta.OrderByDescending(x => x.FechaInicio))
                             {
-                                <a href="@img" target="_blank" class="text-decoration-none">
-                                    <img src="@img"
-                                         class="rounded border"
-                                         style="width: 85px; height: 85px; object-fit: cover;"
-                                         alt="Miniatura" />
-                                </a>
+                                <tr>
+                                    <td>@s.SubastaId</td>
+                                    <td>@s.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@s.FechaCierre.ToString("dd/MM/yyyy")</td>
+                                    <td>@(s.EstadoSubasta?.NombreEstado ?? "-")</td>
+                                </tr>
                             }
-                        </div>
-
-                        <small class="text-muted d-block mt-2">
-                            Puedes abrir una imagen en grande haciendo clic.
-                        </small>
-                    }
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">
+                    Esta joya todavía no ha participado en ninguna subasta.
+                </p>
+            }
+        </section>
 
-        <!-- Columna derecha: Info del objeto -->
-        <div class="col-lg-7">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <strong>Información del objeto</strong>
+        <hr class="my-4" />
 
-                    <!-- Estado como badge -->
-                    @{
-                        var estado = (Model.Estado ?? "").ToUpper();
-                        var badgeEstado = estado.Contains("ACTIV") || estado.Contains("DISP") ? "bg-success"
-                        : estado.Contains("BLOQ") || estado.Contains("INACT") ? "bg-danger"
-                        : "bg-secondary";
-                    }
-                    <span class="badge @badgeEstado">@Model.Estado</span>
-                </div>
-
-                <div class="card-body">
-                    <h4 class="mb-1">@Model.Nombre</h4>
-                    <p class="text-muted mb-3">@Model.Descripcion</p>
-
-                    <!-- Chips -->
-                    <div class="mb-3">
-                        <span class="badge text-bg-primary me-1">Categorías</span>
-                        <span class="text-muted">@Model.Categorias</span>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="text-muted small">Condición</div>
-                            @{
-                                var cond = (Model.Condicion ?? "").ToUpper();
-                                var badgeCond = cond.Contains("NUEVO") ? "bg-info" : "bg-warning";
-                            }
-                            <span class="badge @badgeCond text-dark">@Model.Condicion</span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">Fecha registro</div>
-                            <div class="fw-semibold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">Dueño</div>
-                            <div class="fw-semibold">@Model.Dueno</div>
-                        </div>
-                    </div>
-
-                  
-                </div>
-            </div>
-        </div>
-
-        <!-- Historial -->
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Historial de subastas (LINQ)</strong>
-                </div>
-
-                <div class="card-body">
-                    @if (Model.HistorialSubastas == null || !Model.HistorialSubastas.Any())
-                    {
-                        <div class="alert alert-info mb-0">
-                            Este objeto no ha participado en subastas.
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Inicio</th>
-                                        <th>Cierre</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var s in Model.HistorialSubastas)
-                                    {
-                                        var est = (s.EstadoSubasta ?? "").ToUpper();
-                                        var badge = est.Contains("ACT") ? "bg-success"
-                                        : est.Contains("FIN") ? "bg-secondary"
-                                        : est.Contains("CAN") ? "bg-danger"
-                                        : "bg-dark";
-
-                                        <tr>
-                                            <td class="fw-semibold">@s.SubastaId</td>
-                                            <td>@s.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td>@s.FechaCierre.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td><span class="badge @badge">@s.EstadoSubasta</span></td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-
-                  
-                    }
-                </div>
-            </div>
+        <!-- 🔁 Acciones -->
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+            <a asp-action="Delete" asp-route-id="@Model.JoyaId" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Eliminar
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Regresar al listado
+            </a>
         </div>
 
     </div>
-</div>
+</article>

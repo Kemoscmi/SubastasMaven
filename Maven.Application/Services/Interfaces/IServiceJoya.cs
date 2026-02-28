@@ -9,7 +9,11 @@ namespace Maven.Application.Services.Interfaces
 {
     public interface IServiceJoya
     {
-        Task<List<JoyaListDto>> GetAllAsync();
-        Task<JoyaDetailDto?> GetByIdAsync(int id);
+        Task<int> AddAsync(JoyaDTO dto);
+        Task UpdateAsync(int id, JoyaDTO dto);
+        Task DeleteAsync(int id);
+
+        Task<JoyaDTO> FindByIdAsync(int id);
+        Task<ICollection<JoyaDTO>> ListAsync();
     }
 }

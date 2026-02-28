@@ -16,8 +16,4 @@
 		<ProjectReference Include="..\Maven.Infraestructure\Maven.Infraestructure.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Profiles\" />
-	</ItemGroup>
-
 </Project>

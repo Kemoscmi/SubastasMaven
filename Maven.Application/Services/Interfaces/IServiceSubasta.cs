@@ -4,9 +4,11 @@ namespace Maven.Application.Services.Interfaces
 {
     public interface IServiceSubasta
     {
-        Task<List<SubastaActivaListDto>> GetActivasAsync();
-        Task<List<SubastaFinalizadaListDto>> GetFinalizadasAsync();
-        Task<SubastaDetalleDto?> GetDetalleAsync(int subastaId);
-        Task<List<PujaListDto>> GetHistorialPujasAsync(int subastaId, bool desc = true);
+        Task<int> AddAsync(SubastaDTO dto);
+        Task UpdateAsync(int id, SubastaDTO dto);
+        Task DeleteAsync(int id);
+
+        Task<SubastaDTO> FindByIdAsync(int id);
+        Task<ICollection<SubastaDTO>> ListAsync();
     }
 }

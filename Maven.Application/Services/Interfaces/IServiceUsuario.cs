@@ -4,7 +4,10 @@ namespace Maven.Application.Services.Interfaces
 {
     public interface IServiceUsuario
     {
-        Task<List<UsuarioListDto>> GetAllAsync();
-        Task<UsuarioDetailDto?> GetByIdAsync(int id);
+        Task<int> AddAsync(UsuarioDTO dto);
+        Task UpdateAsync(int id, UsuarioDTO dto);
+        Task DeleteAsync(int id);
+        Task<UsuarioDTO> FindByIdAsync(int id);
+        Task<ICollection<UsuarioDTO>> ListAsync();
     }
 }
