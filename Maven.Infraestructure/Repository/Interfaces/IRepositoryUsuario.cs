@@ -4,7 +4,15 @@ namespace Maven.Infraestructure.Repository.Interfaces
 {
     public interface IRepositoryUsuario
     {
-        Task<List<Usuario>> GetAllAsync();
-        Task<Usuario?> GetByIdAsync(int id);
+        Task<int> AddAsync(Usuario entity);
+        Task UpdateAsync(Usuario entity);
+        Task DeleteAsync(int id);
+
+        Task<Usuario?> FindByIdAsync(int id);
+        Task<ICollection<Usuario>> ListAsync();
+
+        //  métodos para campos calculados (LINQ)
+        Task<int> CountSubastasCreadasAsync(int usuarioId);
+        Task<int> CountPujasRealizadasAsync(int usuarioId);
     }
 }

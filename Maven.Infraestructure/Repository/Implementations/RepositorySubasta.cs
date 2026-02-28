@@ -14,9 +14,49 @@ namespace Maven.Infraestructure.Repository.Implementations
             _db = db;
         }
 
-        public IQueryable<Subasta> Query()
+        public async Task<ICollection<Subasta>> ListAsync()
         {
-            return _db.Subasta.AsNoTracking();
+            return await _db.Subasta
+                .AsNoTracking()
+                .Include(s => s.Joya)
+                .Include(s => s.Vendedor)
+                .Include(s => s.EstadoSubasta)
+                .OrderByDescending(s => s.FechaCreacion)
+                .ToListAsync();
+        }
+
+        public async Task<Subasta?> FindByIdAsync(int id)
+        {
+            return await _db.Subasta
+                .AsNoTracking()
+                .Include(s => s.Joya)
+                .Include(s => s.Vendedor)
+                .Include(s => s.EstadoSubasta)
+                .Include(s => s.Puja)
+                .Include(s => s.SubastaResultado)
+                .FirstOrDefaultAsync(s => s.SubastaId == id);
+        }
+
+        public async Task<int> AddAsync(Subasta entity)
+        {
+            _db.Subasta.Add(entity);
+            await _db.SaveChangesAsync();
+            return entity.SubastaId;
+        }
+
+        public async Task UpdateAsync(Subasta entity)
+        {
+            _db.Subasta.Update(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _db.Subasta.FindAsync(id);
+            if (entity is null) return;
+
+            _db.Subasta.Remove(entity);
+            await _db.SaveChangesAsync();
         }
     }
 }

@@ -13,34 +13,58 @@ namespace Maven.Infraestructure.Repository.Implementations
     public class RepositoryJoya : IRepositoryJoya
     {
         private readonly MavenContext _db;
+
         public RepositoryJoya(MavenContext db)
         {
             _db = db;
         }
 
-        public async Task<List<Joya>> GetAllAsync()
-        {
-            return await _db.Joya
-                .AsNoTracking()
-                .Include(j => j.CategoriaJoya)
-                .Include(j => j.EstadoObjeto)
-                .Include(j => j.CondicionObjeto)
-                .Include(j => j.JoyaImagen)
-                .OrderBy(j => j.JoyaId)
-                .ToListAsync();
-        }
-
-        public async Task<Joya?> GetByIdAsync(int id)
+        public async Task<ICollection<Joya>> ListAsync()
         {
             return await _db.Joya
                 .AsNoTracking()
                 .Include(j => j.Vendedor)
-                .Include(j => j.CategoriaJoya)
+                .Include(j => j.EstadoObjeto)
+                .Include(j => j.CondicionObjeto)
+                .Include(j => j.JoyaImagen)      // ✅ para la imagen
+                .Include(j => j.CategoriaJoya)   // ✅ para categorías
+                .OrderBy(j => j.JoyaId)
+                .ToListAsync();
+        }
+        public async Task<Joya?> FindByIdAsync(int id)
+        {
+            return await _db.Joya
+                .AsNoTracking()
+                .Include(j => j.Vendedor)
                 .Include(j => j.EstadoObjeto)
                 .Include(j => j.CondicionObjeto)
                 .Include(j => j.JoyaImagen)
-                .Include(j => j.Subasta) //  historial subastas (LINQ)
+                .Include(j => j.Subasta)
+                .Include(j => j.CategoriaJoya)
                 .FirstOrDefaultAsync(j => j.JoyaId == id);
         }
+
+        public async Task<int> AddAsync(Joya entity)
+        {
+            _db.Joya.Add(entity);
+            await _db.SaveChangesAsync();
+            return entity.JoyaId;
+        }
+
+        public async Task UpdateAsync(Joya entity)
+        {
+            _db.Joya.Update(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _db.Joya.FindAsync(id);
+            if (entity is null) return;
+
+            _db.Joya.Remove(entity);
+            await _db.SaveChangesAsync();
+        }
     }
+
 }

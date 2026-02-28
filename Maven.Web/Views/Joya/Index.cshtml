@@ -1,9 +1,10 @@
-﻿@model List<Maven.Application.DTOs.JoyaListDto>
+﻿@model List<Maven.Application.DTOs.JoyaDTO>
+
 @{
     ViewData["Title"] = "Objetos Subastables";
 }
 
-<h2 class="mb-3">Objetos Subastables</h2>
+<h2 class="mb-4">Objetos Subastables</h2>
 
 @if (Model == null || !Model.Any())
 {
@@ -11,43 +12,60 @@
 }
 else
 {
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Imagen</th>
-                <th>Categorías</th>
-                <th>Condición</th>
-                <th>Estado</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var j in Model)
-            {
-                <tr>
-                    <td>@j.Nombre</td>
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(j.ImagenPrincipal))
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var j in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <!-- Imagen -->
+                    @if (!string.IsNullOrWhiteSpace(j.ImagenPrincipal))
+                    {
+                        <img src="@j.ImagenPrincipal"
+                             class="card-img-top"
+                             style="height: 180px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center justify-content-center bg-light"
+                             style="height: 180px;">
+                            <span class="text-muted">(sin imagen)</span>
+                        </div>
+                    }
+
+                    <!-- Cuerpo -->
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">@j.Nombre</h5>
+
+                        @* Categorías *@
+                        @if (!string.IsNullOrWhiteSpace(j.CategoriasTexto))
                         {
-                            <img src="@j.ImagenPrincipal" width="60" />
+                            <p class="mb-2">
+                                <span class="badge bg-secondary">@j.CategoriasTexto</span>
+                            </p>
                         }
-                        else
-                        {
-                            <span>(sin imagen)</span>
-                        }
-                    </td>
-                    <td>@j.Categorias</td>
-                    <td>@j.Condicion</td>
-                    <td>@j.Estado</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           asp-action="Detalle" asp-route-id="@j.JoyaId">
-                            Ver detalle
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+                        <p class="mb-1">
+                            <strong>Condición:</strong>
+                            @(j.CondicionObjeto?.NombreCondicion ?? "-")
+                        </p>
+                        <p class="mb-0">
+                            <strong>Estado:</strong>
+                            @(j.EstadoObjeto?.NombreEstado ?? "-")
+                        </p>
+                    </div>
+
+                    <!-- Footer con botón -->
+                    <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
+                        <div class="d-flex justify-content-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-action="Detalle"
+                               asp-route-id="@j.JoyaId">
+                                Ver detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }

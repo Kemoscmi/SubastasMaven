@@ -1,16 +1,16 @@
-using Maven.Web.Middleware;
+using Maven.Application.Profiles;
+using Maven.Application.Services.Implementations;
+// DI Usuario
+using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenData;
+using Maven.Infraestructure.Repository.Implementations;
+using Maven.Infraestructure.Repository.Interfaces;
+using Maven.Web.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using System.Text;
-
-// DI Usuario
-using Maven.Application.Services.Interfaces;
-using Maven.Application.Services.Implementations;
-using Maven.Infraestructure.Repository.Interfaces;
-using Maven.Infraestructure.Repository.Implementations;
-
 
 
 Directory.CreateDirectory("Logs");
@@ -83,11 +83,17 @@ builder.Services.AddScoped<IServiceJoya, ServiceJoya>();
 
 
 // =======================
-// AutoMapper (si luego lo ocupas)
+// AutoMapper 
 // =======================
-// builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // =======================
+// AutoMapper
+// =======================
+builder.Services.AddAutoMapper(cfg =>
+{
+    // Escanea TODO el assembly donde están tus Profiles (Maven.Application)
+    cfg.AddMaps(typeof(UsuarioProfile).Assembly);
+});// =======================
 // Configurar SQL Server Maven DbContext
 // =======================
 var connectionString = builder.Configuration.GetConnectionString("SqlServerDataBase");
@@ -109,6 +115,16 @@ builder.Services.AddDbContext<MavenContext>(options =>
 });
 
 var app = builder.Build();
+
+
+///se puede quitar
+//using (var scope = app.Services.CreateScope())
+//{
+   // var mapper = scope.ServiceProvider.GetRequiredService<AutoMapper.IMapper>();
+    //mapper.ConfigurationProvider.AssertConfigurationIsValid();
+//}
+//hasta aqui 
+
 
 // =======================
 // Pipeline

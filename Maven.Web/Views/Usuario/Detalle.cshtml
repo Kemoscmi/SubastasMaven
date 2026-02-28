@@ -1,110 +1,146 @@
-﻿@model Maven.Application.DTOs.UsuarioDetailDto
+﻿@model Maven.Application.DTOs.UsuarioDTO
 
 @{
     ViewData["Title"] = "Detalle de Usuario";
+
+    var rolNombre = Model.Rol?.NombreRol ?? "No disponible";
+    var estadoNombre = Model.EstadoUsuario?.NombreEstado ?? "No disponible";
+
+    var estadoUpper = estadoNombre.ToUpperInvariant();
+    var claseEstado = estadoUpper.Contains("ACTIV") ? "text-bg-success"
+                    : estadoUpper.Contains("INACTIV") ? "text-bg-danger"
+                    : "text-bg-secondary";
 }
 
-<div class="container mt-4">
+<nav class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Inicio</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Usuario" asp-action="Index" class="text-decoration-none">Usuarios</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+    </ol>
+</nav>
 
-    <!-- Encabezado + botón volver -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="mb-0">Detalle de Usuario</h2>
-            <small class="text-muted">Información del perfil y métricas calculadas (LINQ)</small>
-        </div>
-        <a class="btn btn-outline-secondary" asp-action="Index">
-            <i class="bi bi-arrow-left"></i> Volver
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Detalle de usuario</h1>
+        <p class="text-muted mb-0">Información del perfil y actividad dentro del sistema.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.UsuarioId" class="btn btn-outline-primary">
+            <i class="bi bi-pencil-square me-1"></i> Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver
         </a>
     </div>
-
-    <div class="row g-3">
-        
-
-
-
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Perfil</strong>
-                </div>
-
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="text-muted small">Nombre</div>
-                            <div class="fw-semibold">@Model.NombreCompleto</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted small">Correo</div>
-                            <div class="fw-semibold">@Model.Correo</div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="text-muted small">Rol</div>
-                            <span class="badge bg-primary">@Model.Rol</span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">Estado</div>
-                            @{
-                                var claseEstado = Model.Estado?.ToUpper() == "ACTIVO" ? "bg-success" : "bg-danger";
-                            }
-                            <span class="badge @claseEstado">@Model.Estado</span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">Fecha de registro</div>
-                            <div class="fw-semibold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</div>
-                        </div>
-                    </div>
-
-                    <hr />
-
-                    <div class="alert alert-light border mb-0">
-                        <div class="fw-semibold mb-1">Notas</div>
-                        <div class="text-muted small">
-                            Los valores de “subastas creadas” y “pujas realizadas” se obtienen mediante consultas LINQ,
-                            no están almacenados en la base de datos.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-  
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Campos calculados (LINQ)</strong>
-                </div>
-
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-2">
-                        <div>
-                            <div class="text-muted small">Subastas creadas</div>
-                            <div class="fw-semibold">Total</div>
-                        </div>
-                        <div class="display-6 mb-0">@Model.CantidadSubastasCreadas</div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center p-3 border rounded">
-                        <div>
-                            <div class="text-muted small">Pujas realizadas</div>
-                            <div class="fw-semibold">Total</div>
-                        </div>
-                        <div class="display-6 mb-0">@Model.CantidadPujasRealizadas</div>
-                    </div>
-
-                    <div class="mt-3">
-                        <small class="text-muted">
-                            *Si el usuario no tiene registros asociados, los conteos pueden aparecer como 0.
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+<article class="card shadow-sm border-0">
+    <div class="card-body p-4">
+
+        <!--  Información básica del perfil -->
+        <header class="mb-3">
+            <h2 class="h4 fw-semibold mb-1">@Model.NombreCompleto</h2>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="badge text-bg-light border">
+                    <i class="bi bi-envelope me-1"></i>
+                    @Model.Correo
+                </span>
+
+                <span class="badge text-bg-primary">
+                    <i class="bi bi-person-badge me-1"></i>
+                    @rolNombre
+                </span>
+
+                <span class="badge @claseEstado">
+                    <i class="bi bi-shield-check me-1"></i>
+                    @estadoNombre
+                </span>
+            </div>
+        </header>
+
+        <hr class="my-3" />
+
+        <section class="mb-4">
+            <h3 class="h5 mb-3">Información básica del perfil</h3>
+
+            <dl class="row mb-0">
+                <dt class="col-12 col-md-4 text-muted">Nombre completo</dt>
+                <dd class="col-12 col-md-8">
+                    @Model.NombreCompleto
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Rol</dt>
+                <dd class="col-12 col-md-8">
+                    @rolNombre
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Estado</dt>
+                <dd class="col-12 col-md-8">
+                    <span class="badge @claseEstado">@estadoNombre</span>
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">Fecha de registro</dt>
+                <dd class="col-12 col-md-8">
+                    @Model.FechaRegistro.ToString("dd/MM/yyyy")
+                </dd>
+
+                <dt class="col-12 col-md-4 text-muted">ID Usuario</dt>
+                <dd class="col-12 col-md-8">
+                    <span class="badge text-bg-light border">@Model.UsuarioId</span>
+                </dd>
+            </dl>
+        </section>
+
+        <hr class="my-3" />
+
+        <!--  Historial mínimo (campos calculados con LINQ) -->
+        <section>
+            <h3 class="h5 mb-3">Actividad en el sistema (campos calculados)</h3>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-1">Subastas creadas (si es vendedor)</p>
+                            <p class="display-6 mb-0">@Model.CantidadSubastasCreadas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-1">Pujas realizadas (si es comprador)</p>
+                            <p class="display-6 mb-0">@Model.CantidadPujasRealizadas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-muted small mt-2 mb-0">
+                Estos valores se calculan dinámicamente con consultas LINQ sobre Subastas y Pujas,
+                no están almacenados en la base de datos.
+            </p>
+        </section>
+
+        <hr class="my-4" />
+
+        <!--  Acciones -->
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+            <a asp-action="Delete" asp-route-id="@Model.UsuarioId" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Eliminar
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Regresar al listado
+            </a>
+        </div>
+
+    </div>
+</article>

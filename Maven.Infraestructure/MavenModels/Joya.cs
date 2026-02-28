@@ -22,6 +22,8 @@ public partial class Joya
     public virtual CondicionObjeto CondicionObjeto { get; set; } = null!;
 
     public virtual EstadoObjeto EstadoObjeto { get; set; } = null!;
+   
+    //se utiliza asi en icollection porque necesito subir o cargar varias imagenes y no solo una
 
     public virtual ICollection<JoyaImagen> JoyaImagen { get; set; } = new List<JoyaImagen>();
 

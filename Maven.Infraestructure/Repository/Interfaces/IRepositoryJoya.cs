@@ -9,7 +9,11 @@ namespace Maven.Infraestructure.Repository.Interfaces
 {
     public interface IRepositoryJoya
     {
-        Task<List<Joya>> GetAllAsync();
-        Task<Joya?> GetByIdAsync(int id);
+        Task<int> AddAsync(Joya entity);
+        Task UpdateAsync(Joya entity);
+        Task DeleteAsync(int id);
+
+        Task<Joya?> FindByIdAsync(int id);
+        Task<ICollection<Joya>> ListAsync();
     }
 }
