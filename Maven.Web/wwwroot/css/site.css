@@ -217,3 +217,41 @@ footer {
 .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* =====================================================
+        BTNS En Subastas
+   ===================================================== */
+
+/* Botón elegante Maven */
+.btn-maven {
+    background-color: #1f1f1f; /* negro elegante */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-maven:hover {
+        background-color: #c9a227; /* dorado suave */
+        color: #1f1f1f;
+    }
+
+.maven-back {
+    display: inline-block;
+    text-decoration: none;
+    color: #1f1f1f;
+    border: 1px solid #1f1f1f;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+    background-color: #fff;
+}
+
+    .maven-back:hover {
+        background-color: #c9a227; /* dorado */
+        color: #1f1f1f;
+        border-color: #c9a227;
+    }

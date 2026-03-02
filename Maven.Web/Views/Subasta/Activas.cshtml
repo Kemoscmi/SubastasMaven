@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Maven.Web.Models.SubastaHistorialSelectVm>
+@{
+    ViewData["Title"] = "Subastas Activas";
+}
+
+<h2>Subastas Activas</h2>
+
+<table class="table table-striped table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Imagen</th>
+            <th>Objeto subastado</th>
+            <th>Fecha de inicio</th>
+            <th>Fecha estimada de cierre</th>
+            <th>Cantidad de pujas</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td style="width:120px">
+                    @if (!string.IsNullOrWhiteSpace(s.ImagenUrl))
+                    {
+                        <img src="@s.ImagenUrl" style="width:110px; height:80px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <span class="text-muted">Sin imagen</span>
+                    }
+                </td>
+                <td>@s.Objeto</td>
+                <td>@s.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@s.FechaRef.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@s.CantidadPujas</td>
+                <td class="text-center">
+                    <a class="btn btn-sm btn-maven" asp-action="DetalleVisual" asp-route-id="@s.SubastaId">
+                        Ver detalle
+                    </a>                  
+                    
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@s.SubastaId">Historial</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
