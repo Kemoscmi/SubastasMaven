@@ -23,11 +23,11 @@ namespace Maven.Infraestructure.Repository.Implementations
         {
             return await _db.Joya
                 .AsNoTracking()
-                .Include(j => j.Vendedor)
+                .AsSplitQuery() 
                 .Include(j => j.EstadoObjeto)
                 .Include(j => j.CondicionObjeto)
-                .Include(j => j.JoyaImagen)      // ✅ para la imagen
-                .Include(j => j.CategoriaJoya)   // ✅ para categorías
+                .Include(j => j.JoyaImagen)
+                .Include(j => j.CategoriaJoya)
                 .OrderBy(j => j.JoyaId)
                 .ToListAsync();
         }

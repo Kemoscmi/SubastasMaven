@@ -43,23 +43,52 @@ namespace Maven.Application.Services.Implementations
             if (entity is null)
                 throw new KeyNotFoundException($"No existe una joya con id {id}");
 
-            // 1) Mapear lo normal con AutoMapper
+            // 1) Mapeo base (nombre, descripción, estado, condición, vendedor, etc.)
             var dto = _mapper.Map<JoyaDTO>(entity);
 
-            // 2) Calcular ImagenPrincipal
+            // 2) IMAGEN PRINCIPAL
             dto.ImagenPrincipal = entity.JoyaImagen
                 .OrderBy(i => i.JoyaImagenId)
                 .Select(i => i.UrlImagen)
                 .FirstOrDefault() ?? string.Empty;
 
-            // 3) Calcular CategoriasTexto
-            dto.CategoriasTexto = (entity.CategoriaJoya != null && entity.CategoriaJoya.Any())
+            // 3) TODAS LAS IMÁGENES para el detalle
+            dto.JoyaImagen = entity.JoyaImagen
+                .OrderBy(i => i.JoyaImagenId)
+                .Select(i => new JoyaImagenDTO
+                {
+                    JoyaImagenId = i.JoyaImagenId,
+                    JoyaId = i.JoyaId,
+                    UrlImagen = i.UrlImagen
+                  
+                })
+                .ToList();
+
+            // 4) CATEGORÍAS texto plano para la vista
+            dto.CategoriasTexto = entity.CategoriaJoya.Any()
                 ? string.Join(", ", entity.CategoriaJoya.Select(c => c.Nombre))
-                : "Sin categorías";
+                : string.Empty;
+
+            // 5) HISTORIAL DE SUBASTAS (Id, fechas, estado)
+            dto.Subasta = entity.Subasta
+                .OrderByDescending(s => s.FechaInicio)
+                .Select(s => new SubastaDTO
+                {
+                    SubastaId = s.SubastaId,
+                    FechaInicio = s.FechaInicio,
+                    FechaCierre = s.FechaCierre,
+                    EstadoSubasta = s.EstadoSubasta == null
+                        ? null
+                        : new EstadoSubastaDTO
+                        {
+                            EstadoSubastaId = s.EstadoSubasta.EstadoSubastaId,
+                            NombreEstado = s.EstadoSubasta.NombreEstado
+                        }
+                })
+                .ToList();
 
             return dto;
         }
-
         public async Task<ICollection<JoyaDTO>> ListAsync()
         {
             var list = await _repository.ListAsync();
