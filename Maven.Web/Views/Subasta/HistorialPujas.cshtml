@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Maven.Web.Models.PujaHistorialVm>
+@{
+    ViewData["Title"] = "Historial de Pujas";
+    int subastaId = ViewBag.SubastaId ?? 0;
+}
+
+<h2>Historial de Pujas (Subasta #@subastaId)</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Esta subasta no tiene pujas registradas.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Monto ofertado</th>
+                <th>Fecha y hora</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.Usuario</td>
+                    <td>₡@p.MontoOfertado</td>
+                    <td>@p.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a class="maven-back" asp-action="DetalleVisual" asp-route-id="@subastaId">
+    ← Volver al detalle
+</a>

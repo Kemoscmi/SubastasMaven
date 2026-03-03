@@ -104,5 +104,120 @@ namespace Maven.Web.Controllers
             ViewBag.VendedorId = new SelectList(vendedores, "UsuarioId", "NombreCompleto");
             ViewBag.EstadoSubastaId = new SelectList(estados, "EstadoSubastaId", "NombreEstado");
         }
+
+        public async Task<IActionResult> Activas()
+        {
+            var data = await _db.Subasta
+                .AsNoTracking()
+                .Include(s => s.Joya)
+                .Include(s => s.EstadoSubasta)
+                .Where(s => s.EstadoSubastaId == 3) // ACTIVA
+                .OrderBy(s => s.FechaCierre)
+                .Select(s => new SubastaHistorialSelectVm
+                {
+                    SubastaId = s.SubastaId,
+                    Objeto = s.Joya.Nombre,
+                    Estado = s.EstadoSubasta.NombreEstado,
+                    FechaRef = s.FechaCierre, // “fecha estimada de cierre”
+                    ImagenUrl = _db.JoyaImagen
+                        .Where(img => img.JoyaId == s.JoyaId)
+                        .OrderByDescending(img => img.FechaRegistro)
+                        .Select(img => img.UrlImagen)
+                        .FirstOrDefault(),
+                    CantidadPujas = _db.Puja.Count(p => p.SubastaId == s.SubastaId) // ✅ LINQ
+                })
+                .ToListAsync();
+
+            return View(data);
+        }
+
+        public async Task<IActionResult> Finalizadas()
+        {
+            var data = await _db.Subasta
+                .AsNoTracking()
+                .Include(s => s.Joya)
+                .Include(s => s.EstadoSubasta)
+                .Where(s => s.EstadoSubastaId == 4 || s.EstadoSubastaId == 5) // FINALIZADA o CANCELADA
+                .OrderByDescending(s => s.FechaCierre)
+                .Select(s => new SubastaHistorialSelectVm
+                {
+                    SubastaId = s.SubastaId,
+                    Objeto = s.Joya.Nombre,
+                    Estado = s.EstadoSubasta.NombreEstado, // FINALIZADA/CANCELADA
+                    FechaInicio = s.FechaInicio,
+                    FechaRef = s.FechaCierre,
+                    ImagenUrl = _db.JoyaImagen
+                        .Where(img => img.JoyaId == s.JoyaId)
+                        .OrderByDescending(img => img.FechaRegistro)
+                        .Select(img => img.UrlImagen)
+                        .FirstOrDefault(),
+                    CantidadPujas = _db.Puja.Count(p => p.SubastaId == s.SubastaId) // ✅ LINQ
+                })
+                .ToListAsync();
+
+            return View(data);
+        }
+
+        public async Task<IActionResult> DetalleVisual(int id)
+        {
+            var s = await _db.Subasta
+                .AsNoTracking()
+                .Include(x => x.Joya)
+                .ThenInclude(j => j.CondicionObjeto)
+                .Include(x => x.Joya)
+                .ThenInclude(j => j.CategoriaJoya)
+                .Include(x => x.Vendedor)
+                .Include(x => x.EstadoSubasta)
+                .FirstOrDefaultAsync(x => x.SubastaId == id);
+
+            if (s == null) return NotFound();
+
+            // Cantidad total pujas (LINQ)
+            ViewBag.CantidadPujas = await _db.Puja.CountAsync(p => p.SubastaId == id);
+
+            // Imagen principal
+            ViewBag.ImagenUrl = await _db.JoyaImagen
+                .AsNoTracking()
+                .Where(i => i.JoyaId == s.JoyaId)
+                .OrderByDescending(i => i.FechaRegistro)
+                .Select(i => i.UrlImagen)
+                .FirstOrDefaultAsync();
+
+            // Condición del objeto (tabla CondicionObjeto)
+            ViewBag.Condicion = s.Joya.CondicionObjeto?.NombreCondicion;
+
+            // Categorías (JoyaCategoria -> CategoriaJoya)
+            ViewBag.Categorias = s.Joya.CategoriaJoya
+                 .Select(c => c.Nombre)
+                 .OrderBy(n => n)
+                 .ToList();
+
+            return View(s);
+        }
+
+        public async Task<IActionResult> HistorialPujas(int id)
+        {
+            // Validación: la subasta debe existir
+            var existe = await _db.Subasta.AsNoTracking().AnyAsync(s => s.SubastaId == id);
+            if (!existe) return NotFound();
+
+            var pujas = await _db.Puja
+                .AsNoTracking()
+                .Include(p => p.Comprador)
+                .Where(p => p.SubastaId == id)                 // ✅ asociadas al ID
+                .OrderBy(p => p.FechaHora)                     // ✅ orden cronológico consistente (vieja → nueva)
+                .Select(p => new PujaHistorialVm
+                {
+                    PujaId = p.PujaId,
+                    SubastaId = p.SubastaId,
+                    Usuario = p.Comprador.NombreCompleto,
+                    MontoOfertado = p.MontoOfertado,
+                    FechaHora = p.FechaHora
+                })
+                .ToListAsync();
+
+            ViewBag.SubastaId = id;
+            return View(pujas);
+        }
     }
 }
