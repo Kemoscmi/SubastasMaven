@@ -158,7 +158,7 @@ namespace Maven.Web.Controllers
             return View(data);
         }
 
-        public async Task<IActionResult> DetalleVisual(int id)
+        public async Task<IActionResult> DetalleVisual(int id, string? origen)
         {
             var s = await _db.Subasta
                 .AsNoTracking()
@@ -192,6 +192,7 @@ namespace Maven.Web.Controllers
                  .OrderBy(n => n)
                  .ToList();
 
+            ViewBag.Origen = origen;
             return View(s);
         }
 

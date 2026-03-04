@@ -4,6 +4,7 @@
     var imagen = ViewBag.ImagenUrl as string;
     var condicion = ViewBag.Condicion as string;
     var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
+    var origen = ViewBag.Origen as string;
     int cantidadPujas = ViewBag.CantidadPujas ?? 0;
 }
 
@@ -119,9 +120,19 @@
                     <a class="btn btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@Model.SubastaId">
                         <i class="bi bi-clock-history me-1"></i>Ver historial de pujas
                     </a>
-                    <a class="maven-back" asp-action="Activas">
-                        ← Volver a subastas activas
-                    </a>
+
+                    @if (origen == "finalizadas")
+                    {
+                        <a class="maven-back" asp-action="Finalizadas">
+                            ← Volver a subastas finalizadas
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="maven-back" asp-action="Activas">
+                            ← Volver a subastas activas
+                        </a>
+                    }
                 </div>
             </div>
         </div>
