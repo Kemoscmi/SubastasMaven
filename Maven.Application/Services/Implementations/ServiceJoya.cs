@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Maven.Application.DTOs;
 using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenModels;
 using Maven.Infraestructure.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,13 +91,30 @@ namespace Maven.Application.Services.Implementations
         }
         public async Task<ICollection<JoyaDTO>> ListAsync()
         {
-            return await _repository
-                .Query() // IQueryable<Joya>
-                         // Si quieres filtrar solo "subastables", puedes ponerlo aquí:
-                         // .Where(j => j.AlgunaPropiedad == true)
+            var list = await _repository.ListAsync();
 
-                .ProjectTo<JoyaDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var dtos = new List<JoyaDTO>();
+
+            foreach (var j in list)
+            {
+                // 1) Mapeamos lo básico con AutoMapperc
+                var dto = _mapper.Map<JoyaDTO>(j);
+
+                // 2) Calculamos la imagen principal desde la colección JoyaImagen
+                dto.ImagenPrincipal = j.JoyaImagen
+                    .OrderBy(i => i.JoyaImagenId)
+                    .Select(i => i.UrlImagen)
+                    .FirstOrDefault() ?? string.Empty;
+
+                // 3) Calculamos el texto de categorías
+                dto.CategoriasTexto = (j.CategoriaJoya != null && j.CategoriaJoya.Any())
+                    ? string.Join(", ", j.CategoriaJoya.Select(c => c.Nombre))
+                    : "Sin categorías";
+
+                dtos.Add(dto);
+            }
+
+            return dtos;
         }
 
         public async Task UpdateAsync(int id, JoyaDTO dto)
