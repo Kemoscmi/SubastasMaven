@@ -53,16 +53,21 @@ namespace Maven.Application.Services.Implementations
                 .FirstOrDefault() ?? string.Empty;
 
             // TODAS LAS IMÁGENES para el detalle
-            dto.JoyaImagen = entity.JoyaImagen
-                .OrderBy(i => i.JoyaImagenId)
-                .Select(i => new JoyaImagenDTO
-                {
-                    JoyaImagenId = i.JoyaImagenId,
-                    JoyaId = i.JoyaId,
-                    UrlImagen = i.UrlImagen
-                  
-                })
-                .ToList();
+            var imgs = (entity.JoyaImagen ?? new List<JoyaImagen>())
+      .Where(i => !string.IsNullOrWhiteSpace(i.UrlImagen))
+      .GroupBy(i => i.UrlImagen.Trim())
+      .Select(g => g.OrderBy(x => x.JoyaImagenId).First())
+      .OrderBy(i => i.JoyaImagenId)
+      .ToList();
+
+            dto.ImagenPrincipal = imgs.FirstOrDefault()?.UrlImagen ?? string.Empty;
+
+            dto.JoyaImagen = imgs.Select(i => new JoyaImagenDTO
+            {
+                JoyaImagenId = i.JoyaImagenId,
+                JoyaId = i.JoyaId,
+                UrlImagen = i.UrlImagen
+            }).ToList();
 
             //  CATEGORÍAS texto plano para la vista
             dto.CategoriasTexto = entity.CategoriaJoya.Any()

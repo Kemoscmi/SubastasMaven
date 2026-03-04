@@ -40,11 +40,12 @@ namespace Maven.Infraestructure.Repository.Implementations
         {
             return await _db.Joya
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(j => j.Vendedor)
                 .Include(j => j.EstadoObjeto)
                 .Include(j => j.CondicionObjeto)
                 .Include(j => j.JoyaImagen)
-                .Include(j => j.Subasta)
+                .Include(j => j.Subasta).ThenInclude(s => s.EstadoSubasta)
                 .Include(j => j.CategoriaJoya)
                 .FirstOrDefaultAsync(j => j.JoyaId == id);
         }
