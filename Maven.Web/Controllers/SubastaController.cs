@@ -118,6 +118,7 @@ namespace Maven.Web.Controllers
                     SubastaId = s.SubastaId,
                     Objeto = s.Joya.Nombre,
                     Estado = s.EstadoSubasta.NombreEstado,
+                    FechaInicio = s.FechaInicio,
                     FechaRef = s.FechaCierre, // “fecha estimada de cierre”
                     ImagenUrl = _db.JoyaImagen
                         .Where(img => img.JoyaId == s.JoyaId)
