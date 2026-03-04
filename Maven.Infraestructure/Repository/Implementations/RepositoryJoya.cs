@@ -20,7 +20,7 @@ namespace Maven.Infraestructure.Repository.Implementations
         }
         public IQueryable<Joya> Query()
         {
-           
+            //   AsNoTracking para listados
             return _db.Joya.AsNoTracking();
         }
 
@@ -40,11 +40,12 @@ namespace Maven.Infraestructure.Repository.Implementations
         {
             return await _db.Joya
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(j => j.Vendedor)
                 .Include(j => j.EstadoObjeto)
                 .Include(j => j.CondicionObjeto)
                 .Include(j => j.JoyaImagen)
-                .Include(j => j.Subasta)
+                .Include(j => j.Subasta).ThenInclude(s => s.EstadoSubasta)
                 .Include(j => j.CategoriaJoya)
                 .FirstOrDefaultAsync(j => j.JoyaId == id);
         }
@@ -69,32 +70,6 @@ namespace Maven.Infraestructure.Repository.Implementations
 
             _db.Joya.Remove(entity);
             await _db.SaveChangesAsync();
-        }
-
-        public async Task<ICollection<Joya>> ListCatalogoAsync()
-        {
-            return await _db.Joya
-                .AsNoTracking()
-                .OrderBy(j => j.JoyaId)
-                .Select(j => new Joya
-                {
-                    JoyaId = j.JoyaId,
-                    Nombre = j.Nombre,
-
-                    // Solo lo necesario para mostrar Condición/Estado
-                    EstadoObjeto = j.EstadoObjeto,
-                    CondicionObjeto = j.CondicionObjeto,
-
-                    //  Solo 1 imagen 
-                    JoyaImagen = j.JoyaImagen
-                        .OrderBy(i => i.JoyaImagenId)
-                        .Take(1)
-                        .ToList(),
-
-                    // Categorías 
-                    CategoriaJoya = j.CategoriaJoya.ToList()
-                })
-                .ToListAsync();
         }
     }
 

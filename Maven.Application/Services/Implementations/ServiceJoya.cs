@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Maven.Application.DTOs;
 using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenModels;
 using Maven.Infraestructure.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,33 +43,38 @@ namespace Maven.Application.Services.Implementations
             if (entity is null)
                 throw new KeyNotFoundException($"No existe una joya con id {id}");
 
-            // 1) Mapeo base (nombre, descripción, estado, condición, vendedor, etc.)
+            //  Mapeo base (nombre, descripción, estado, condición, vendedor, etc.)
             var dto = _mapper.Map<JoyaDTO>(entity);
 
-            // 2) IMAGEN PRINCIPAL
+            //  IMAGEN PRINCIPAL
             dto.ImagenPrincipal = entity.JoyaImagen
                 .OrderBy(i => i.JoyaImagenId)
                 .Select(i => i.UrlImagen)
                 .FirstOrDefault() ?? string.Empty;
 
-            // 3) TODAS LAS IMÁGENES para el detalle
-            dto.JoyaImagen = entity.JoyaImagen
-                .OrderBy(i => i.JoyaImagenId)
-                .Select(i => new JoyaImagenDTO
-                {
-                    JoyaImagenId = i.JoyaImagenId,
-                    JoyaId = i.JoyaId,
-                    UrlImagen = i.UrlImagen
-                  
-                })
-                .ToList();
+            // TODAS LAS IMÁGENES para el detalle
+            var imgs = (entity.JoyaImagen ?? new List<JoyaImagen>())
+      .Where(i => !string.IsNullOrWhiteSpace(i.UrlImagen))
+      .GroupBy(i => i.UrlImagen.Trim())
+      .Select(g => g.OrderBy(x => x.JoyaImagenId).First())
+      .OrderBy(i => i.JoyaImagenId)
+      .ToList();
 
-            // 4) CATEGORÍAS texto plano para la vista
+            dto.ImagenPrincipal = imgs.FirstOrDefault()?.UrlImagen ?? string.Empty;
+
+            dto.JoyaImagen = imgs.Select(i => new JoyaImagenDTO
+            {
+                JoyaImagenId = i.JoyaImagenId,
+                JoyaId = i.JoyaId,
+                UrlImagen = i.UrlImagen
+            }).ToList();
+
+            //  CATEGORÍAS texto plano para la vista
             dto.CategoriasTexto = entity.CategoriaJoya.Any()
                 ? string.Join(", ", entity.CategoriaJoya.Select(c => c.Nombre))
                 : string.Empty;
 
-            // 5) HISTORIAL DE SUBASTAS (Id, fechas, estado)
+            //  HISTORIAL DE SUBASTAS (Id, fechas, estado)
             dto.Subasta = entity.Subasta
                 .OrderByDescending(s => s.FechaInicio)
                 .Select(s => new SubastaDTO
@@ -93,13 +96,30 @@ namespace Maven.Application.Services.Implementations
         }
         public async Task<ICollection<JoyaDTO>> ListAsync()
         {
-            return await _repository
-                .Query() // IQueryable<Joya>
-                         // Si quieres filtrar solo "subastables", puedes ponerlo aquí:
-                         // .Where(j => j.AlgunaPropiedad == true)
+            var list = await _repository.ListAsync();
 
-                .ProjectTo<JoyaDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var dtos = new List<JoyaDTO>();
+
+            foreach (var j in list)
+            {
+                // 1) Mapeamos lo básico con AutoMapperc
+                var dto = _mapper.Map<JoyaDTO>(j);
+
+                // 2) Calculamos la imagen principal desde la colección JoyaImagen
+                dto.ImagenPrincipal = j.JoyaImagen
+                    .OrderBy(i => i.JoyaImagenId)
+                    .Select(i => i.UrlImagen)
+                    .FirstOrDefault() ?? string.Empty;
+
+                // 3) Calculamos el texto de categorías
+                dto.CategoriasTexto = (j.CategoriaJoya != null && j.CategoriaJoya.Any())
+                    ? string.Join(", ", j.CategoriaJoya.Select(c => c.Nombre))
+                    : "Sin categorías";
+
+                dtos.Add(dto);
+            }
+
+            return dtos;
         }
 
         public async Task UpdateAsync(int id, JoyaDTO dto)
