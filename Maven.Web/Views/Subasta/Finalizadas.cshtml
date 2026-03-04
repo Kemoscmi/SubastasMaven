@@ -35,7 +35,12 @@
                 <td>@s.Estado</td>
                 <td>@s.CantidadPujas</td>
                 <td class="text-center">
-                    <a class="btn btn-sm btn-primary" asp-action="DetalleVisual" asp-route-id="@s.SubastaId">Ver detalle</a>
+                    <a class="btn btn-sm btn-maven"
+                       asp-action="DetalleVisual"
+                       asp-route-id="@s.SubastaId"
+                       asp-route-origen="finalizadas">
+                        Ver detalle
+                    </a>
                     <a class="btn btn-sm btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@s.SubastaId">Historial</a>
                 </td>
             </tr>

@@ -35,10 +35,13 @@
                 <td>@s.FechaRef.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@s.CantidadPujas</td>
                 <td class="text-center">
-                    <a class="btn btn-sm btn-maven" asp-action="DetalleVisual" asp-route-id="@s.SubastaId">
+                    <a class="btn btn-sm btn-maven"
+                       asp-action="DetalleVisual"
+                       asp-route-id="@s.SubastaId"
+                       asp-route-origen="activas">
                         Ver detalle
-                    </a>                  
-                    
+                    </a>
+
                     <a class="btn btn-sm btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@s.SubastaId">Historial</a>
                 </td>
             </tr>
