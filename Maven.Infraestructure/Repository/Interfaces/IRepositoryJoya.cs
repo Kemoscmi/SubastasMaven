@@ -15,5 +15,10 @@ namespace Maven.Infraestructure.Repository.Interfaces
 
         Task<Joya?> FindByIdAsync(int id);
         Task<ICollection<Joya>> ListAsync();
+
+        //  Query base para poder proyectar
+        IQueryable<Joya> Query();
+
+
     }
 }

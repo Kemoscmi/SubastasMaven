@@ -18,6 +18,11 @@ namespace Maven.Infraestructure.Repository.Implementations
         {
             _db = db;
         }
+        public IQueryable<Joya> Query()
+        {
+           
+            return _db.Joya.AsNoTracking();
+        }
 
         public async Task<ICollection<Joya>> ListAsync()
         {
@@ -64,6 +69,32 @@ namespace Maven.Infraestructure.Repository.Implementations
 
             _db.Joya.Remove(entity);
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<ICollection<Joya>> ListCatalogoAsync()
+        {
+            return await _db.Joya
+                .AsNoTracking()
+                .OrderBy(j => j.JoyaId)
+                .Select(j => new Joya
+                {
+                    JoyaId = j.JoyaId,
+                    Nombre = j.Nombre,
+
+                    // Solo lo necesario para mostrar Condición/Estado
+                    EstadoObjeto = j.EstadoObjeto,
+                    CondicionObjeto = j.CondicionObjeto,
+
+                    //  Solo 1 imagen 
+                    JoyaImagen = j.JoyaImagen
+                        .OrderBy(i => i.JoyaImagenId)
+                        .Take(1)
+                        .ToList(),
+
+                    // Categorías 
+                    CategoriaJoya = j.CategoriaJoya.ToList()
+                })
+                .ToListAsync();
         }
     }
 

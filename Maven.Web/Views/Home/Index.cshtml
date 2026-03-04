@@ -2,62 +2,78 @@
     ViewData["Title"] = "Inicio";
 }
 
+<!-- HERO -->
 <section class="py-5 text-center bg-light rounded-3 mb-4 shadow-sm">
     <div class="container">
         <h1 class="display-5 fw-bold mb-3">
-            Bienvenido a la Librería Virtual
+            Bienvenido a MAVEN Jewelry
         </h1>
 
         <p class="lead text-muted mb-4">
-            Explora autores, libros y reportes con una interfaz clara y moderna.
+            Descubre joyas exclusivas y participa en subastas activas con una experiencia clara y moderna.
         </p>
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a asp-controller="Subasta" asp-action="Activas" class="btn btn-primary px-4">
+                <i class="bi bi-hammer me-2"></i> Ver subastas activas
+            </a>
+            <a asp-controller="Joya" asp-action="Index" class="btn btn-outline-secondary px-4">
+                <i class="bi bi-gem me-2"></i> Ver catálogo de joyas
+            </a>
+        </div>
 
         @if (ViewBag.Id != null)
         {
-            <span class="badge text-bg-primary fs-6 px-3 py-2">
-                Identificador activo: @ViewBag.Id
-            </span>
+            <div class="mt-4">
+                <span class="badge text-bg-primary fs-6 px-3 py-2">
+                    Identificador activo: @ViewBag.Id
+                </span>
+            </div>
         }
     </div>
 </section>
 
-<!-- CAROUSEL -->
+<!-- CARRUSEL (Promos/Subastas destacadas) -->
 <div id="carruselHome" class="carousel slide mb-5 shadow rounded overflow-hidden" data-bs-ride="carousel">
 
     <div class="carousel-indicators">
         <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="0"
-                class="active" aria-current="true" aria-label="Imagen 1"></button>
+                class="active" aria-current="true" aria-label="Slide 1"></button>
         <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="1"
-                aria-label="Imagen 2"></button>
+                aria-label="Slide 2"></button>
         <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="2"
-                aria-label="Imagen 3"></button>
+                aria-label="Slide 3"></button>
     </div>
 
     <div class="carousel-inner">
 
+        <!-- Slide 1 -->
         <div class="carousel-item active">
-            <img src="~/images/slide-1.jpg" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Libros en estantería">
+            <img src="~/images/slide-1.jpg" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Subastas activas">
             <div class="carousel-caption bg-dark bg-opacity-50 p-3 rounded-3">
-                <h5 class="fw-bold">Bienvenido a tu biblioteca digital</h5>
-                <p>Explora contenido organizado y accesible.</p>
+                <h5 class="fw-bold mb-1">Subastas activas en tiempo real</h5>
+                <p class="mb-0">Mira las subastas disponibles y oferta desde el catálogo.</p>
             </div>
         </div>
 
+        <!-- Slide 2 -->
         <div class="carousel-item">
-            <img src="~/images/slide-2.jpg" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Autores destacados">
+            <img src="~/images/slide-2.jpg" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Joyas destacadas">
             <div class="carousel-caption bg-dark bg-opacity-50 p-3 rounded-3">
-                <h5 class="fw-bold">Autores destacados</h5>
-                <p>Conoce los creadores detrás de cada obra.</p>
+                <h5 class="fw-bold mb-1">Joyas destacadas</h5>
+                <p class="mb-0">Explora anillos, collares, pulseras y aretes por categoría.</p>
             </div>
         </div>
 
+        <!-- Slide 3 -->
         <div class="carousel-item">
-            <img src="~/images/slide-3.png" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Reportes de ventas y estadísticas">
+            <img src="~/images/slide-3.jpg" class="d-block w-100 object-fit-cover" style="height:460px;" loading="lazy" alt="Reportes y control">
             <div class="carousel-caption bg-dark bg-opacity-50 p-3 rounded-3">
-                <h5 class="fw-bold">Reportes y estadísticas</h5>
-                <p>Obtén reportes claros para tomar mejores decisiones.</p>
+                <h5 class="fw-bold mb-1">Reportes y administración</h5>
+                <p class="mb-0">Consulta estadísticas, historial y monitoreo del proceso.</p>
             </div>
         </div>
+
     </div>
 
     <!-- Controles -->
@@ -73,46 +89,178 @@
 
 </div>
 
-<!-- ACCESOS RÁPIDOS -->
+<!-- SECCIÓN: SUBASTA DESTACADA (Mock visual, sin modelo todavía) -->
+<section class="container mb-5">
+    <div class="row g-4 align-items-stretch">
+
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                <div class="row g-0 h-100">
+
+                    <div class="col-md-5">
+                        <!-- Cambia la imagen si quieres -->
+                        <img src="~/images/slide-2.jpg" class="w-100 h-100 object-fit-cover" style="min-height:240px;" alt="Joya destacada">
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <div>
+                                    <h2 class="h5 fw-bold mb-1">Subasta destacada</h2>
+                                    <p class="text-muted mb-0">Una joya premium disponible hoy.</p>
+                                </div>
+                                <span class="badge text-bg-success px-3 py-2">
+                                    ACTIVA
+                                </span>
+                            </div>
+
+                            <hr class="my-3" />
+
+                            <!-- Info típica de subasta -->
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="small text-muted">Joya</div>
+                                    <div class="fw-semibold">Anillo de Oro 18K</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Condición</div>
+                                    <span class="badge text-bg-warning text-dark">NUEVO</span>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Precio inicial</div>
+                                    <div class="fw-semibold">₡ 75,000</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Oferta actual</div>
+                                    <div class="fw-semibold">₡ 92,500</div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="small text-muted">Cierra en</div>
+                                    <div class="fw-semibold">02:14:36</div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 68%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4">
+                                <a asp-controller="Subasta" asp-action="Activas" class="btn btn-primary">
+                                    <i class="bi bi-eye me-2"></i> Ver subasta
+                                </a>
+                                <a asp-controller="Joya" asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-gem me-2"></i> Ver joyas
+                                </a>
+                            </div>
+
+                            <div class="mt-3 small text-muted">
+                                *Esta tarjeta es un ejemplo visual. Si me pasas tu DTO de Subasta, lo conecto a datos reales.
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini KPIs -->
+        <div class="col-12 col-lg-5">
+            <div class="row g-4 h-100">
+
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box text-bg-primary">
+                                    <i class="bi bi-hammer"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Subastas activas</div>
+                                    <div class="h4 mb-0 fw-bold">12</div>
+                                </div>
+                            </div>
+                            <div class="text-muted small mt-2">Participa y sigue el historial de pujas.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box text-bg-success">
+                                    <i class="bi bi-gem"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Objetos subastables</div>
+                                    <div class="h4 mb-0 fw-bold">48</div>
+                                </div>
+                            </div>
+                            <div class="text-muted small mt-2">Explora por categoría y condición.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box text-bg-danger">
+                                    <i class="bi bi-bar-chart-line"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Reportes</div>
+                                    <div class="h4 mb-0 fw-bold">Dashboard</div>
+                                </div>
+                            </div>
+                            <div class="text-muted small mt-2">Revisa métricas, ventas y subastas.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ACCESOS RÁPIDOS (MAVEN) -->
 <section class="container mb-5">
     <h2 class="h4 fw-bold mb-4 text-center">Accesos rápidos</h2>
 
     <div class="row g-4">
 
-        <!-- Autores -->
         <div class="col-12 col-md-4">
-            <a asp-controller="Autor" asp-action="Index" class="text-decoration-none text-dark">
+            <a asp-controller="Joya" asp-action="Index" class="text-decoration-none text-dark">
                 <div class="card h-100 shadow-sm border-0 hover-card">
                     <div class="card-body text-center py-4">
-                        <i class="bi bi-people fs-1 mb-3 text-primary"></i>
-                        <h5 class="fw-semibold">Autores</h5>
-                        <p class="text-muted small">Gestiona y visualiza tus autores registrados.</p>
+                        <i class="bi bi-gem fs-1 mb-3 text-primary"></i>
+                        <h5 class="fw-semibold">Catálogo</h5>
+                        <p class="text-muted small mb-0">Explora objetos subastables y sus detalles.</p>
                     </div>
                 </div>
             </a>
         </div>
 
-        <!-- Libros -->
         <div class="col-12 col-md-4">
-            <a asp-controller="Libro" asp-action="Index" class="text-decoration-none text-dark">
+            <a asp-controller="Subasta" asp-action="Activas" class="text-decoration-none text-dark">
                 <div class="card h-100 shadow-sm border-0 hover-card">
                     <div class="card-body text-center py-4">
-                        <i class="bi bi-book-half fs-1 mb-3 text-success"></i>
-                        <h5 class="fw-semibold">Libros</h5>
-                        <p class="text-muted small">Consulta el catálogo de libros disponible.</p>
+                        <i class="bi bi-hammer fs-1 mb-3 text-success"></i>
+                        <h5 class="fw-semibold">Subastas</h5>
+                        <p class="text-muted small mb-0">Revisa subastas activas y el historial.</p>
                     </div>
                 </div>
             </a>
         </div>
 
-        <!-- Reportes -->
         <div class="col-12 col-md-4">
-            <a asp-controller="Reporte" asp-action="GraficoVentas" class="text-decoration-none text-dark">
+            <a asp-controller="Reporte" asp-action="Index" class="text-decoration-none text-dark">
                 <div class="card h-100 shadow-sm border-0 hover-card">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-bar-chart-line fs-1 mb-3 text-danger"></i>
                         <h5 class="fw-semibold">Reportes</h5>
-                        <p class="text-muted small">Visualiza estadísticas y reportes de ventas.</p>
+                        <p class="text-muted small mb-0">Estadísticas y visualización del proceso.</p>
                     </div>
                 </div>
             </a>
@@ -123,13 +271,13 @@
 
 @section Scripts {
     <script>
-        const myCarouselElement = document.querySelector('#carruselHome')
+        const myCarouselElement = document.querySelector('#carruselHome');
 
         const carousel = new bootstrap.Carousel(myCarouselElement, {
             interval: 3500,
             pause: false,
             ride: 'carousel'
-        })
+        });
     </script>
 
     <style>
@@ -137,6 +285,16 @@
             transform: translateY(-4px);
             transition: all 0.25s ease;
             box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-box {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
         }
     </style>
 }
