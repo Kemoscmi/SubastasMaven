@@ -1,0 +1,130 @@
+﻿@model Maven.Infraestructure.MavenModels.Subasta
+@{
+    ViewData["Title"] = "Detalle de Subasta";
+    var imagen = ViewBag.ImagenUrl as string;
+    var condicion = ViewBag.Condicion as string;
+    var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
+    int cantidadPujas = ViewBag.CantidadPujas ?? 0;
+}
+
+<h2 class="mb-3">Detalle de Subasta #@Model.SubastaId</h2>
+
+<div class="row g-3">
+    <!-- Imagen -->
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(imagen))
+                {
+                    <img src="@imagen" class="img-fluid rounded" style="width:100%; height:320px; object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="border rounded p-4 text-muted text-center" style="height:320px; display:flex; align-items:center; justify-content:center;">
+                        Sin imagen
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="col-md-8">
+
+        <!-- Card: Objeto -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-body">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-gem"></i>
+                    <strong>Objeto subastado</strong>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <h4 class="mb-1">@Model.Joya.Nombre</h4>
+                <p class="text-muted mb-3">@Model.Joya.Descripcion</p>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Condición</div>
+                        <div class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(condicion) ? "Sin condición" : condicion)
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small text-muted">Categorías</div>
+                        <div class="fw-semibold">
+                            @if (categorias.Any())
+                            {
+                                @string.Join(", ", categorias)
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin categorías</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Subasta -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-body">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-hammer"></i>
+                    <strong>Información de la subasta</strong>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Fecha inicio</div>
+                        <div class="fw-semibold">@Model.FechaInicio.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Fecha cierre</div>
+                        <div class="fw-semibold">@Model.FechaCierre.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small text-muted">Precio base</div>
+                        <div class="fw-semibold">₡@Model.PrecioBase</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Incremento mínimo</div>
+                        <div class="fw-semibold">₡@Model.IncrementoMinimo</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small text-muted">Estado actual</div>
+                        <div class="fw-semibold">@Model.EstadoSubasta.NombreEstado</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Cantidad total de pujas</div>
+                        <div class="fw-semibold">@cantidadPujas</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="small text-muted">Vendedor</div>
+                        <div class="fw-semibold">@Model.Vendedor.NombreCompleto</div>
+                    </div>
+                </div>
+
+                <hr class="my-3" />
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@Model.SubastaId">
+                        <i class="bi bi-clock-history me-1"></i>Ver historial de pujas
+                    </a>
+                    <a class="maven-back" asp-action="Activas">
+                        ← Volver a subastas activas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
