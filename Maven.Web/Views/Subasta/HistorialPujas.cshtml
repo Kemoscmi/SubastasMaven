@@ -35,6 +35,9 @@ else
     </table>
 }
 
-<a class="maven-back" asp-action="DetalleVisual" asp-route-id="@subastaId">
+<a class="maven-back"
+   asp-action="DetalleVisual"
+   asp-route-id="@ViewBag.SubastaId"
+   asp-route-origen="@ViewBag.Origen">
     ← Volver al detalle
 </a>

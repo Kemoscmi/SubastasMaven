@@ -197,7 +197,7 @@ namespace Maven.Web.Controllers
             return View(s);
         }
 
-        public async Task<IActionResult> HistorialPujas(int id)
+        public async Task<IActionResult> HistorialPujas(int id, string? origen)
         {
             // Validación: la subasta debe existir
             var existe = await _db.Subasta.AsNoTracking().AnyAsync(s => s.SubastaId == id);
@@ -218,6 +218,7 @@ namespace Maven.Web.Controllers
                 })
                 .ToListAsync();
 
+            ViewBag.Origen = origen;
             ViewBag.SubastaId = id;
             return View(pujas);
         }
