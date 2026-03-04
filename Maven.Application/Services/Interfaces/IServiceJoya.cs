@@ -13,7 +13,7 @@ namespace Maven.Application.Services.Interfaces
         Task UpdateAsync(int id, JoyaDTO dto);
         Task DeleteAsync(int id);
 
+        Task<List<JoyaDTO>> ListAsync();
         Task<JoyaDTO> FindByIdAsync(int id);
-        Task<ICollection<JoyaDTO>> ListAsync();
     }
 }

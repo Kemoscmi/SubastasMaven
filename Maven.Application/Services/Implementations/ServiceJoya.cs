@@ -91,15 +91,10 @@ namespace Maven.Application.Services.Implementations
 
             return dto;
         }
-        public async Task<ICollection<JoyaDTO>> ListAsync()
+        public async Task<List<JoyaDTO>> ListAsync()
         {
-            return await _repository
-                .Query() // IQueryable<Joya>
-                         // Si quieres filtrar solo "subastables", puedes ponerlo aquí:
-                         // .Where(j => j.AlgunaPropiedad == true)
-
-                .ProjectTo<JoyaDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var list = await _repository.ListAsync();      // esto debe devolver List<Joya> o IEnumerable<Joya>
+            return _mapper.Map<List<JoyaDTO>>(list);
         }
 
         public async Task UpdateAsync(int id, JoyaDTO dto)
