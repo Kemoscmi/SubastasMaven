@@ -4,7 +4,22 @@
     ViewData["Title"] = "Objetos Subastables";
 }
 
-<h2 class="mb-4">Objetos Subastables</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Objetos Subastables</h2>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Crear objeto
+        </a>
+
+        @if (User.IsInRole("ADMIN"))
+        {
+            <a asp-action="Inactivos" class="btn btn-outline-secondary">
+                <i class="bi bi-eye-slash me-1"></i> Inactivos
+            </a>
+        }
+    </div>
+</div>
 
 @if (Model == null || !Model.Any())
 {
@@ -17,7 +32,6 @@ else
         {
             <div class="col">
                 <div class="card h-100 shadow-sm border-0">
-                    <!-- Imagen -->
                     @if (!string.IsNullOrWhiteSpace(j.ImagenPrincipal))
                     {
                         <img src="@j.ImagenPrincipal"
@@ -32,11 +46,9 @@ else
                         </div>
                     }
 
-                    <!-- Cuerpo -->
                     <div class="card-body">
                         <h5 class="card-title mb-2">@j.Nombre</h5>
 
-                        @* Categorías *@
                         @if (!string.IsNullOrWhiteSpace(j.CategoriasTexto))
                         {
                             <p class="mb-2">
@@ -54,13 +66,24 @@ else
                         </p>
                     </div>
 
-                    <!-- Footer con botón -->
                     <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-between gap-2">
+                            <a class="btn btn-sm btn-outline-secondary"
+                               asp-action="Edit"
+                               asp-route-id="@j.JoyaId">
+                                Editar
+                            </a>
+
                             <a class="btn btn-sm btn-outline-primary"
                                asp-action="Detalle"
                                asp-route-id="@j.JoyaId">
                                 Ver detalle
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-danger"
+                               asp-action="Delete"
+                               asp-route-id="@j.JoyaId">
+                                Eliminar
                             </a>
                         </div>
                     </div>

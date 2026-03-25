@@ -44,7 +44,14 @@ namespace Maven.Infraestructure.Repository.Implementations
 
         public async Task UpdateAsync(Usuario entity)
         {
-            _db.Usuario.Update(entity);
+            var actual = await _db.Usuario.FirstOrDefaultAsync(u => u.UsuarioId == entity.UsuarioId);
+
+            if (actual == null)
+                throw new Exception("No se encontró el usuario.");
+
+            actual.NombreCompleto = entity.NombreCompleto;
+            actual.Correo = entity.Correo;
+
             await _db.SaveChangesAsync();
         }
 
@@ -68,6 +75,29 @@ namespace Maven.Infraestructure.Repository.Implementations
         {
             return await _db.Puja
                 .CountAsync(p => p.CompradorId == usuarioId);
+        }
+
+
+        public async Task<Usuario?> FindByEmailAsync(string email)
+        {
+            var correo = email.Trim().ToLower();
+
+            return await _db.Usuario
+                .Include(u => u.Rol)
+                .Include(u => u.EstadoUsuario)
+                .FirstOrDefaultAsync(u => u.Correo.ToLower() == correo);
+        }
+
+        public async Task CambiarEstadoAsync(int usuarioId, int estadoUsuarioId)
+        {
+            var actual = await _db.Usuario.FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
+
+            if (actual == null)
+                throw new Exception("No se encontró el usuario.");
+
+            actual.EstadoUsuarioId = estadoUsuarioId;
+
+            await _db.SaveChangesAsync();
         }
     }
 }

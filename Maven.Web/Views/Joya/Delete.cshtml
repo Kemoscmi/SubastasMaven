@@ -1,0 +1,44 @@
+﻿@model Maven.Application.DTOs.JoyaDTO
+
+@{
+    ViewData["Title"] = "Eliminar joya";
+}
+
+<h2 class="mb-4">Eliminar joya</h2>
+
+<div class="alert alert-warning">
+    ¿Estás seguro de que deseas eliminar este objeto?
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Nombre</h5>
+
+        <p class="mb-2">
+            <strong>Descripción:</strong>
+            @Model.Descripcion
+        </p>
+
+        <p class="mb-2">
+            <strong>Condición:</strong>
+            @(Model.CondicionObjeto?.NombreCondicion ?? "-")
+        </p>
+
+        <p class="mb-3">
+            <strong>Estado:</strong>
+            @(Model.EstadoObjeto?.NombreEstado ?? "-")
+        </p>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="JoyaId" />
+
+            <button type="submit" class="btn btn-danger">
+                Eliminar
+            </button>
+
+            <a asp-action="Index" class="btn btn-secondary">
+                Volver
+            </a>
+        </form>
+    </div>
+</div>

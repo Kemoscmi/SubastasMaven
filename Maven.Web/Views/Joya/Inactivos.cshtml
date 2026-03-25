@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Maven.Application.DTOs.JoyaDTO>
+
+@{
+    ViewData["Title"] = "Joyas Inactivas";
+}
+
+<h2 class="mb-4">Joyas Inactivas</h2>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Categorías</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td style="width:80px;">
+                    <img src="@item.ImagenPrincipal"
+                         class="img-thumbnail"
+                         style="max-height:60px;" />
+                </td>
+
+                <td>@item.Nombre</td>
+
+                <td>@item.CategoriasTexto</td>
+
+                <td>
+                    <form asp-action="ToggleEstado" asp-route-id="@item.JoyaId" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <button class="btn btn-sm btn-success">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Activar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-outline-secondary mt-3">
+    Volver al listado
+</a>

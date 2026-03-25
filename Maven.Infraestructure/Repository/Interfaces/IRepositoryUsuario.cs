@@ -14,5 +14,10 @@ namespace Maven.Infraestructure.Repository.Interfaces
         //  métodos para campos calculados (LINQ)
         Task<int> CountSubastasCreadasAsync(int usuarioId);
         Task<int> CountPujasRealizadasAsync(int usuarioId);
+
+
+        Task<Usuario?> FindByEmailAsync(string email);
+
+        Task CambiarEstadoAsync(int usuarioId, int estadoUsuarioId);
     }
 }

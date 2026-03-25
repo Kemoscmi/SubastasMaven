@@ -1,61 +1,317 @@
 ﻿@model Maven.Application.DTOs.JoyaDTO
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Crear joya";
+
+    var categorias = ViewData["CategoriaJoyaId"] as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var categoriasSeleccionadas = ViewBag.CategoriasSeleccionadas as List<int> ?? new List<int>();
 }
+
+<style>
+    .mj-form-card {
+        background: #fff;
+        border: 1px solid #f0e6d8;
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .mj-section-title {
+        font-weight: 600;
+        color: #4a3f35;
+    }
+
+    .mj-soft-note {
+        color: #8b7d6b;
+        font-size: .92rem;
+    }
+
+    .category-chip-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: .35rem;
+    }
+
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #333;
+        cursor: pointer;
+        transition: all .2s ease;
+        font-weight: 500;
+    }
+
+        .category-chip:hover {
+            border-color: #000;
+            background: #f5f5f5;
+        }
+
+        .category-chip.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .category-chip:hover {
+            transform: translateY(-1px);
+            border-color: #d8b98a;
+            box-shadow: 0 8px 20px rgba(128, 97, 65, 0.12);
+        }
+
+        .category-chip.active {
+            background: linear-gradient(135deg, #1f1a17 0%, #3d3127 100%);
+            color: #fff8ef;
+            border-color: #1f1a17;
+            box-shadow: 0 10px 24px rgba(31, 26, 23, 0.24);
+        }
+
+    .category-checkbox {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .category-chip-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d9c3a1;
+        background: #fff;
+        color: transparent;
+        font-size: 12px;
+        transition: all .22s ease;
+        flex-shrink: 0;
+    }
+
+    .category-chip.active .category-chip-icon {
+        background: rgba(255,255,255,0.16);
+        border-color: rgba(255,255,255,0.35);
+        color: #fff;
+    }
+
+    .mj-preview-card {
+        border: 1px solid #eee2d2;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fffdfa;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+        .mj-preview-card img {
+            height: 210px;
+            width: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .mj-preview-body {
+        padding: .7rem .85rem;
+    }
+
+    .mj-badge-main {
+        display: inline-block;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: #1f1a17;
+        color: #fff;
+        font-size: .78rem;
+        font-weight: 600;
+    }
+
+    .mj-badge-secondary {
+        display: inline-block;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: #f2e6d8;
+        color: #6a5744;
+        font-size: .78rem;
+        font-weight: 600;
+    }
+
+    .mj-readonly {
+        background-color: #fbf8f3;
+    }
+</style>
 
 <header class="mb-3">
     <h1 class="h3 mb-0">Crear joya</h1>
-    <p class="text-muted mb-0">Mantenimiento: registro de una nueva joya</p>
+    <p class="text-muted mb-0">Mantenimiento: registro de un nuevo objeto subastable</p>
 </header>
 
-<form asp-action="Create" method="post" class="row g-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mj-form-card">
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="col-md-6">
-        <label asp-for="VendedorId" class="form-label"></label>
-        <select asp-for="VendedorId" class="form-select" asp-items="ViewBag.VendedorId">
-            <option value="">-- Seleccione un vendedor --</option>
-        </select>
-        <span asp-validation-for="VendedorId" class="text-danger"></span>
-    </div>
+        <div class="col-12">
+            <label asp-for="Nombre" class="form-label mj-section-title"></label>
+            <input asp-for="Nombre" class="form-control" autocomplete="off" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
 
-    <div class="col-md-6">
-        <label asp-for="EstadoObjetoId" class="form-label"></label>
-        <select asp-for="EstadoObjetoId" class="form-select" asp-items="ViewBag.EstadoObjetoId">
-            <option value="">-- Seleccione un estado --</option>
-        </select>
-        <span asp-validation-for="EstadoObjetoId" class="text-danger"></span>
-    </div>
+        <div class="col-12">
+            <label asp-for="Descripcion" class="form-label mj-section-title"></label>
+            <textarea asp-for="Descripcion"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Escriba una descripción detallada de la joya"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
 
-    <div class="col-md-6">
-        <label asp-for="CondicionObjetoId" class="form-label"></label>
-        <select asp-for="CondicionObjetoId" class="form-select" asp-items="ViewBag.CondicionObjetoId">
-            <option value="">-- Seleccione una condición --</option>
-        </select>
-        <span asp-validation-for="CondicionObjetoId" class="text-danger"></span>
-    </div>
+        <div class="col-12">
+            <label class="form-label mj-section-title d-block">Categorías</label>
 
-    <div class="col-12">
-        <label asp-for="Nombre" class="form-label"></label>
-        <input asp-for="Nombre" class="form-control" autocomplete="off" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
-    </div>
+            <div class="category-chip-container">
+                @foreach (var item in categorias)
+                {
+                    var id = int.TryParse(item.Value, out var val) ? val : 0;
+                    var isSelected = categoriasSeleccionadas.Contains(id);
 
-    <div class="col-12">
-        <label asp-for="Descripcion" class="form-label"></label>
-        <textarea asp-for="Descripcion" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Descripcion" class="text-danger"></span>
-    </div>
+                    <label class="category-chip @(isSelected ? "active" : "")">
+                        <input type="checkbox"
+                               name="categoriaIds"
+                               value="@item.Value"
+                               class="category-checkbox"
+                               @(isSelected ? "checked" : null) />
+                        <span class="category-chip-icon">
+                            <i class="bi bi-check-lg"></i>
+                        </span>
+                        <span>@item.Text</span>
+                    </label>
+                }
+            </div>
 
-    <div class="col-12 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check2-circle"></i> Guardar
-        </button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
-    </div>
-</form>
+            <small class="mj-soft-note">Puede seleccionar una o varias categorías.</small>
+
+            @if (ViewData.ModelState["categoriaIds"]?.Errors.Count > 0)
+            {
+                <span class="text-danger d-block mt-1">
+                    @ViewData.ModelState["categoriaIds"]!.Errors[0].ErrorMessage
+                </span>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="CondicionObjetoId" class="form-label mj-section-title"></label>
+            <select asp-for="CondicionObjetoId"
+                    class="form-select"
+                    asp-items="@(ViewData["CondicionObjetoId"] as IEnumerable<SelectListItem>)">
+                <option value="">-- Seleccione una condición --</option>
+            </select>
+            <span asp-validation-for="CondicionObjetoId" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label mj-section-title" for="imageFiles">Imágenes</label>
+            <input type="file"
+                   id="imageFiles"
+                   name="imageFiles"
+                   class="form-control"
+                   accept="image/*"
+                   multiple
+                   required />
+            <small class="mj-soft-note">Seleccione una o varias imágenes. La primera se usará como imagen principal.</small>
+
+            @if (ViewData.ModelState["imageFiles"]?.Errors.Count > 0)
+            {
+                <span class="text-danger d-block">@ViewData.ModelState["imageFiles"]!.Errors[0].ErrorMessage</span>
+            }
+
+            <div id="previewContainer" class="row g-3 mt-1"></div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label mj-section-title">Estado inicial</label>
+            <input type="text" class="form-control mj-readonly" value="ACTIVO" readonly />
+            <small class="mj-soft-note">El sistema asigna automáticamente el estado inicial del objeto.</small>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label mj-section-title">Vendedor asignado</label>
+            <input type="text" class="form-control mj-readonly" value="@ViewBag.VendedorNombre" readonly />
+            <small class="mj-soft-note">Este dato se toma automáticamente del usuario que inició sesión.</small>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-dark">
+                <i class="bi bi-check2-circle"></i> Guardar
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                Volver
+            </a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const inputImages = document.getElementById('imageFiles');
+        const previewContainer = document.getElementById('previewContainer');
+
+        inputImages?.addEventListener('change', () => {
+            previewContainer.innerHTML = '';
+
+            const files = inputImages.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach((file, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-lg-3';
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mj-preview-card h-100';
+
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+
+                const body = document.createElement('div');
+                body.className = 'mj-preview-body';
+
+                const badge = document.createElement('span');
+                badge.className = index === 0 ? 'mj-badge-main' : 'mj-badge-secondary';
+                badge.textContent = index === 0 ? 'Principal' : 'Secundaria';
+
+                const text = document.createElement('small');
+                text.className = 'text-muted d-block mt-2';
+                text.textContent = file.name;
+
+                body.appendChild(badge);
+                body.appendChild(text);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(body);
+                col.appendChild(wrapper);
+                previewContainer.appendChild(col);
+            });
+        });
+
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            const checkbox = chip.querySelector('.category-checkbox');
+
+            const syncState = () => {
+                chip.classList.toggle('active', checkbox.checked);
+            };
+
+            chip.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'INPUT') {
+                    setTimeout(syncState, 0);
+                }
+            });
+
+            checkbox.addEventListener('change', syncState);
+            syncState();
+        });
+    </script>
 }

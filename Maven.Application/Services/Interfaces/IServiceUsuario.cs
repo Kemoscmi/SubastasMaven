@@ -9,5 +9,9 @@ namespace Maven.Application.Services.Interfaces
         Task DeleteAsync(int id);
         Task<UsuarioDTO> FindByIdAsync(int id);
         Task<ICollection<UsuarioDTO>> ListAsync();
+
+        Task<UsuarioDTO?> LoginAsync(string correo, string password);
+
+        Task CambiarEstadoAsync(int usuarioId, int estadoUsuarioId);
     }
 }
