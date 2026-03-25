@@ -27,14 +27,15 @@ namespace Maven.Infraestructure.Repository.Implementations
         public async Task<ICollection<Joya>> ListAsync()
         {
             return await _db.Joya
-                .AsNoTracking()
-                .AsSplitQuery() 
-                .Include(j => j.EstadoObjeto)
-                .Include(j => j.CondicionObjeto)
-                .Include(j => j.JoyaImagen)
-                .Include(j => j.CategoriaJoya)
-                .OrderBy(j => j.JoyaId)
-                .ToListAsync();
+      .Where(j => j.EstadoObjetoId == 1) //  SOLO ACTIVOS
+      .AsNoTracking()
+      .AsSplitQuery()
+      .Include(j => j.EstadoObjeto)
+      .Include(j => j.CondicionObjeto)
+      .Include(j => j.JoyaImagen)
+      .Include(j => j.CategoriaJoya)
+      .OrderBy(j => j.JoyaId)
+      .ToListAsync();
         }
         public async Task<Joya?> FindByIdAsync(int id)
         {
@@ -59,16 +60,142 @@ namespace Maven.Infraestructure.Repository.Implementations
 
         public async Task UpdateAsync(Joya entity)
         {
-            _db.Joya.Update(entity);
+            var actual = await _db.Joya.FirstOrDefaultAsync(j => j.JoyaId == entity.JoyaId);
+
+            if (actual == null)
+                throw new Exception("No se encontró la joya.");
+
+            actual.Nombre = entity.Nombre;
+            actual.Descripcion = entity.Descripcion;
+            actual.CondicionObjetoId = entity.CondicionObjetoId;
+            actual.EstadoObjetoId = entity.EstadoObjetoId;
+            actual.VendedorId = entity.VendedorId;
+            actual.FechaRegistro = entity.FechaRegistro;
+
             await _db.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await _db.Joya.FindAsync(id);
-            if (entity is null) return;
+            var entity = await _db.Joya
+                .Include(j => j.Subasta)
+                .FirstOrDefaultAsync(j => j.JoyaId == id);
 
-            _db.Joya.Remove(entity);
+            if (entity is null)
+                return;
+
+            // Validar que no tenga subastas
+            if (entity.Subasta != null && entity.Subasta.Any())
+                throw new Exception("No se puede eliminar la joya porque ya ha sido subastada.");
+
+           
+            entity.EstadoObjetoId = 2; // INACTIVO
+
+            _db.Joya.Update(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddCategoriasAsync(int joyaId, List<int> categoriaIds)
+        {
+            var joya = await _db.Joya
+                .Include(j => j.CategoriaJoya)
+                .FirstOrDefaultAsync(j => j.JoyaId == joyaId);
+
+            if (joya == null)
+                throw new Exception("No se encontró la joya.");
+
+            var categorias = await _db.CategoriaJoya
+                .Where(c => categoriaIds.Contains(c.CategoriaJoyaId))
+                .ToListAsync();
+
+            foreach (var categoria in categorias)
+            {
+                if (!joya.CategoriaJoya.Any(c => c.CategoriaJoyaId == categoria.CategoriaJoyaId))
+                {
+                    joya.CategoriaJoya.Add(categoria);
+                }
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddImagenesAsync(int joyaId, List<string> rutasImagenes)
+        {
+            if (rutasImagenes == null || rutasImagenes.Count == 0)
+                return;
+
+            var imagenes = rutasImagenes
+                .Select(ruta => new JoyaImagen
+                {
+                    JoyaId = joyaId,
+                    UrlImagen = ruta
+                })
+                .ToList();
+
+            _db.JoyaImagen.AddRange(imagenes);
+            await _db.SaveChangesAsync();
+        }
+        public async Task ReplaceCategoriasAsync(int joyaId, List<int> categoriaIds)
+        {
+            var joya = await _db.Joya
+                .Include(j => j.CategoriaJoya)
+                .FirstOrDefaultAsync(j => j.JoyaId == joyaId);
+
+            if (joya == null)
+                throw new Exception("No se encontró la joya.");
+
+            // Limpiar categorías actuales
+            joya.CategoriaJoya.Clear();
+
+            if (categoriaIds != null && categoriaIds.Count > 0)
+            {
+                var categorias = await _db.CategoriaJoya
+                    .Where(c => categoriaIds.Contains(c.CategoriaJoyaId))
+                    .ToListAsync();
+
+                foreach (var categoria in categorias)
+                {
+                    joya.CategoriaJoya.Add(categoria);
+                }
+            }
+
+            await _db.SaveChangesAsync();
+        }
+        public async Task DeleteImagenAsync(int joyaImagenId)
+        {
+            var imagen = await _db.JoyaImagen
+                .FirstOrDefaultAsync(i => i.JoyaImagenId == joyaImagenId);
+
+            if (imagen == null)
+                return;
+
+            _db.JoyaImagen.Remove(imagen);
+            await _db.SaveChangesAsync();
+        }
+
+
+        public async Task<ICollection<Joya>> ListInactivosAsync()
+        {
+            return await _db.Joya
+                .Where(j => j.EstadoObjetoId == 2) //  INACTIVOS
+                .AsNoTracking()
+                .Include(j => j.EstadoObjeto)
+                .Include(j => j.CondicionObjeto)
+                .Include(j => j.JoyaImagen)
+                .Include(j => j.CategoriaJoya)
+                .OrderBy(j => j.JoyaId)
+                .ToListAsync();
+        }
+
+        public async Task ToggleEstadoAsync(int id)
+        {
+            var joya = await _db.Joya.FirstOrDefaultAsync(j => j.JoyaId == id);
+
+            if (joya == null)
+                throw new Exception("No se encontró la joya.");
+
+            joya.EstadoObjetoId = joya.EstadoObjetoId == 1 ? 2 : 1;
+
             await _db.SaveChangesAsync();
         }
     }

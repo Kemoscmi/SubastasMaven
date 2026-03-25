@@ -43,7 +43,7 @@
 <article class="card shadow-sm border-0">
     <div class="card-body p-4">
 
-        <!-- ENCABEZADO -->
+
         <header class="mb-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
                 <div>
@@ -76,37 +76,36 @@
 
         <hr class="my-4" />
 
-        <!-- CONTENIDO EN 2 COLUMNAS -->
+   
         <section class="row g-4 mb-4">
 
-            <!-- Información básica -->
             <div class="col-12 col-lg-7">
                 <div class="card border-0 bg-light h-100">
                     <div class="card-body p-4">
                         <h3 class="h5 mb-3">Información básica del perfil</h3>
 
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between align-items-center">
+                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between">
                                 <span class="text-muted">Nombre completo</span>
-                                <span class="fw-semibold text-end">@Model.NombreCompleto</span>
+                                <span class="fw-semibold">@Model.NombreCompleto</span>
                             </li>
 
-                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between align-items-center">
+                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between">
                                 <span class="text-muted">Correo</span>
-                                <span class="fw-semibold text-end">@Model.Correo</span>
+                                <span class="fw-semibold">@Model.Correo</span>
                             </li>
 
-                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between align-items-center">
+                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between">
                                 <span class="text-muted">Rol</span>
                                 <span class="badge text-bg-primary">@rolNombre</span>
                             </li>
 
-                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between align-items-center">
+                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between">
                                 <span class="text-muted">Estado</span>
                                 <span class="badge @claseEstado">@estadoNombre</span>
                             </li>
 
-                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between align-items-center">
+                            <li class="list-group-item bg-light px-0 py-3 d-flex justify-content-between">
                                 <span class="text-muted">Fecha de registro</span>
                                 <span class="fw-semibold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</span>
                             </li>
@@ -115,7 +114,6 @@
                 </div>
             </div>
 
-            <!-- Actividad -->
             <div class="col-12 col-lg-5">
                 <div class="card border-0 bg-light h-100">
                     <div class="card-body p-4">
@@ -124,30 +122,23 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="card border-0 shadow-sm">
-                                    <div class="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <div class="text-muted small">Subastas creadas</div>
-                                          
-                                        </div>
-                                        <div class="display-6 mb-0">@Model.CantidadSubastasCreadas</div>
+                                    <div class="card-body d-flex justify-content-between">
+                                        <div class="text-muted small">Subastas creadas</div>
+                                        <div class="display-6">@Model.CantidadSubastasCreadas</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-12">
                                 <div class="card border-0 shadow-sm">
-                                    <div class="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <div class="text-muted small">Pujas realizadas</div>
-                                            
-                                        </div>
-                                        <div class="display-6 mb-0">@Model.CantidadPujasRealizadas</div>
+                                    <div class="card-body d-flex justify-content-between">
+                                        <div class="text-muted small">Pujas realizadas</div>
+                                        <div class="display-6">@Model.CantidadPujasRealizadas</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                      
                     </div>
                 </div>
             </div>
@@ -156,14 +147,32 @@
 
         <hr class="my-4" />
 
-        <!-- ACCIONES -->
+      
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
-            <a asp-action="Delete" asp-route-id="@Model.UsuarioId" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-1"></i> Eliminar
-            </a>
+
+            <form asp-action="CambiarEstado" method="post">
+                @Html.AntiForgeryToken()  
+
+                <input type="hidden" name="id" value="@Model.UsuarioId" />
+
+                @if (Model.EstadoUsuario?.NombreEstado.ToUpper().Contains("ACTIV") == true)
+                {
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-person-x me-1"></i> Desactivar
+                    </button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-person-check me-1"></i> Activar
+                    </button>
+                }
+            </form>
+
             <a asp-action="Index" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Regresar al listado
             </a>
+
         </div>
 
     </div>

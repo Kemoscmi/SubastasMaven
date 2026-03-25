@@ -1,63 +1,434 @@
 ﻿@model Maven.Application.DTOs.JoyaDTO
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Editar joya";
+
+    var categorias = ViewData["CategoriaJoyaId"] as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var categoriasSeleccionadas = ViewBag.CategoriasSeleccionadas as List<int> ?? new List<int>();
+    var imagenesActuales = Model.JoyaImagen ?? new List<Maven.Application.DTOs.JoyaImagenDTO>();
 }
 
-<header class="mb-3">
-    <h1 class="h3 mb-0">Editar joya</h1>
-    <p class="text-muted mb-0">Mantenimiento: actualización de la joya</p>
-</header>
+<style>
+    .mj-edit-wrap {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
 
-<form asp-action="Edit" method="post" asp-route-id="@Model.JoyaId" class="row g-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    .mj-edit-card {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    }
 
-    <input asp-for="JoyaId" type="hidden" />
+    .mj-edit-header {
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
 
-    <div class="col-md-6">
-        <label asp-for="VendedorId" class="form-label"></label>
-        <select asp-for="VendedorId" class="form-select" asp-items="ViewBag.VendedorId">
-            <option value="">-- Seleccione un vendedor --</option>
-        </select>
-        <span asp-validation-for="VendedorId" class="text-danger"></span>
+    .mj-edit-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: .25rem;
+    }
+
+    .mj-edit-subtitle {
+        color: #666;
+        font-size: .95rem;
+        margin-bottom: 0;
+    }
+
+    .mj-label {
+        font-weight: 600;
+        color: #222;
+    }
+
+    .mj-input,
+    .mj-select,
+    .mj-readonly {
+        border-radius: 12px !important;
+        border: 1px solid #ddd !important;
+        background: #fff !important;
+        min-height: 48px;
+        padding: .75rem;
+    }
+
+        .mj-input:focus,
+        .mj-select:focus {
+            border-color: #111 !important;
+            box-shadow: 0 0 0 .15rem rgba(0, 0, 0, 0.08) !important;
+        }
+
+    textarea.mj-input {
+        min-height: 130px;
+    }
+
+    .mj-readonly {
+        background: #f8f8f8 !important;
+        color: #555;
+    }
+
+    .mj-soft-text {
+        color: #777;
+        font-size: .9rem;
+    }
+
+    .mj-section-box {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 16px;
+        padding: 1rem;
+    }
+
+    .category-chip-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #333;
+        cursor: pointer;
+        transition: all .2s ease;
+        font-weight: 500;
+    }
+
+        .category-chip:hover {
+            border-color: #000;
+            background: #f5f5f5;
+        }
+
+        .category-chip.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+    .category-checkbox {
+        display: none;
+    }
+
+    .category-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: transparent;
+    }
+
+    .category-chip.active .category-icon {
+        border-color: #fff;
+        color: #fff;
+    }
+
+    .mj-upload-box {
+        border: 2px dashed #ddd;
+        border-radius: 16px;
+        background: #fafafa;
+        padding: 1rem;
+    }
+
+    .mj-preview-card {
+        border: 1px solid #eee;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        height: 100%;
+    }
+
+        .mj-preview-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+    .mj-preview-body {
+        padding: .75rem;
+    }
+
+    .mj-preview-badge-main {
+        background: #000;
+        color: #fff;
+        padding: .3rem .6rem;
+        border-radius: 999px;
+        font-size: .75rem;
+    }
+
+    .mj-preview-badge-secondary {
+        background: #eee;
+        color: #444;
+        padding: .3rem .6rem;
+        border-radius: 999px;
+        font-size: .75rem;
+    }
+
+    .mj-current-images-title {
+        font-weight: 600;
+        margin-bottom: .75rem;
+        color: #222;
+    }
+
+    .mj-btn-save {
+        background: #000;
+        color: #fff;
+        border-radius: 12px;
+        padding: .7rem 1.2rem;
+        font-weight: 600;
+    }
+
+        .mj-btn-save:hover {
+            background: #222;
+            color: #fff;
+        }
+
+    .mj-btn-back {
+        border-radius: 12px;
+        padding: .7rem 1.2rem;
+    }
+</style>
+
+<div class="mj-edit-wrap">
+    <div class="mj-edit-card">
+        <div class="mj-edit-header">
+            <h1 class="mj-edit-title">Editar joya</h1>
+            <p class="mj-edit-subtitle">Actualice la información del objeto subastable.</p>
+        </div>
+
+        <form asp-action="Edit" method="post" asp-route-id="@Model.JoyaId" enctype="multipart/form-data" class="row g-4">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input asp-for="JoyaId" type="hidden" />
+            <input asp-for="VendedorId" type="hidden" />
+            <input asp-for="EstadoObjetoId" type="hidden" />
+
+            <div class="col-12">
+                <label asp-for="Nombre" class="form-label mj-label">Nombre de la joya</label>
+                <input asp-for="Nombre" class="form-control mj-input" autocomplete="off" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Descripcion" class="form-label mj-label">Descripción</label>
+                <textarea asp-for="Descripcion" class="form-control mj-input" rows="4"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <div class="mj-section-box">
+                    <label class="form-label mj-label d-block">Categorías</label>
+
+                    <div class="category-chip-container">
+                        @foreach (var item in categorias)
+                        {
+                            var id = int.TryParse(item.Value, out var val) ? val : 0;
+                            var isSelected = categoriasSeleccionadas.Contains(id);
+
+                            <label class="category-chip @(isSelected ? "active" : "")">
+                                <input type="checkbox"
+                                       name="categoriaIds"
+                                       value="@item.Value"
+                                       class="category-checkbox"
+                                       @(isSelected ? "checked" : null) />
+                                <span class="category-icon">
+                                    <i class="bi bi-check-lg"></i>
+                                </span>
+                                <span>@item.Text</span>
+                            </label>
+                        }
+                    </div>
+
+                    <div class="mj-soft-text">Puede modificar una o varias categorías.</div>
+
+                    @if (ViewData.ModelState["categoriaIds"]?.Errors.Count > 0)
+                    {
+                        <span class="text-danger d-block mt-2">
+                            @ViewData.ModelState["categoriaIds"]!.Errors[0].ErrorMessage
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="CondicionObjetoId" class="form-label mj-label">Condición del objeto</label>
+                <select asp-for="CondicionObjetoId"
+                        class="form-select mj-select"
+                        asp-items="@(ViewData["CondicionObjetoId"] as IEnumerable<SelectListItem>)">
+                    <option value="">-- Seleccione una condición --</option>
+                </select>
+                <span asp-validation-for="CondicionObjetoId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label mj-label">Estado actual</label>
+                <input type="text" class="form-control mj-readonly" value="@ViewBag.EstadoObjetoNombre" readonly />
+                <div class="mj-soft-text">El estado se controla por reglas del sistema.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label mj-label">Vendedor asignado</label>
+                <input type="text" class="form-control mj-readonly" value="@ViewBag.VendedorNombre" readonly />
+                <div class="mj-soft-text">Este dato no es editable desde la interfaz.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label mj-label">Fecha de registro</label>
+                <input type="text" class="form-control mj-readonly" value="@Model.FechaRegistro.ToString("dd/MM/yyyy")" readonly />
+            </div>
+
+            <div class="col-12">
+                <div class="mj-section-box">
+                    <div class="mj-current-images-title">Imágenes actuales</div>
+
+                    @if (imagenesActuales.Any())
+                    {
+                        <div class="row g-3">
+                            @for (int i = 0; i < imagenesActuales.Count; i++)
+                            {
+                                var img = imagenesActuales[i];
+                                <div class="col-md-4 col-lg-3">
+                                    <div class="mj-preview-card">
+                                        <img src="@img.UrlImagen" alt="Imagen @i" />
+                                        <div class="mj-preview-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="@(i == 0 ? "mj-preview-badge-main" : "mj-preview-badge-secondary")">
+                                                    @(i == 0 ? "Principal" : "Secundaria")
+                                                </span>
+                                            </div>
+
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       name="imagenesEliminarIds"
+                                                       value="@img.JoyaImagenId"
+                                                       id="eliminar_@img.JoyaImagenId" />
+                                                <label class="form-check-label text-danger" for="eliminar_@img.JoyaImagenId">
+                                                    Eliminar esta imagen
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }   
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No hay imágenes registradas.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="mj-upload-box">
+                    <label class="form-label mj-label" for="imageFiles">Agregar nuevas imágenes</label>
+                    <input type="file"
+                           id="imageFiles"
+                           name="imageFiles"
+                           class="form-control"
+                           accept="image/*"
+                           multiple />
+
+                    <div class="mj-soft-text">
+                        Puede agregar imágenes nuevas. Si selecciona imágenes, la primera se usará como principal.
+                    </div>
+
+                    @if (ViewData.ModelState["imageFiles"]?.Errors.Count > 0)
+                    {
+                        <span class="text-danger d-block mt-2">
+                            @ViewData.ModelState["imageFiles"]!.Errors[0].ErrorMessage
+                        </span>
+                    }
+
+                    <div id="previewContainer" class="row g-3 mt-2"></div>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn mj-btn-save">
+                    <i class="bi bi-check2-circle me-1"></i>Guardar cambios
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary mj-btn-back">Volver</a>
+            </div>
+        </form>
     </div>
-
-    <div class="col-md-6">
-        <label asp-for="EstadoObjetoId" class="form-label"></label>
-        <select asp-for="EstadoObjetoId" class="form-select" asp-items="ViewBag.EstadoObjetoId">
-            <option value="">-- Seleccione un estado --</option>
-        </select>
-        <span asp-validation-for="EstadoObjetoId" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-6">
-        <label asp-for="CondicionObjetoId" class="form-label"></label>
-        <select asp-for="CondicionObjetoId" class="form-select" asp-items="ViewBag.CondicionObjetoId">
-            <option value="">-- Seleccione una condición --</option>
-        </select>
-        <span asp-validation-for="CondicionObjetoId" class="text-danger"></span>
-    </div>
-
-    <div class="col-12">
-        <label asp-for="Nombre" class="form-label"></label>
-        <input asp-for="Nombre" class="form-control" autocomplete="off" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
-    </div>
-
-    <div class="col-12">
-        <label asp-for="Descripcion" class="form-label"></label>
-        <textarea asp-for="Descripcion" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Descripcion" class="text-danger"></span>
-    </div>
-
-    <div class="col-12 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check2-circle"></i> Guardar cambios
-        </button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
-    </div>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const inputImages = document.getElementById('imageFiles');
+        const previewContainer = document.getElementById('previewContainer');
+
+        inputImages?.addEventListener('change', () => {
+            previewContainer.innerHTML = '';
+
+            const files = inputImages.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach((file, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-lg-3';
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mj-preview-card';
+
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+
+                const body = document.createElement('div');
+                body.className = 'mj-preview-body';
+
+                const badge = document.createElement('span');
+                badge.className = index === 0 ? 'mj-preview-badge-main' : 'mj-preview-badge-secondary';
+                badge.textContent = index === 0 ? 'Nueva principal' : 'Nueva secundaria';
+
+                const text = document.createElement('small');
+                text.className = 'text-muted d-block mt-2';
+                text.textContent = file.name;
+
+                body.appendChild(badge);
+                body.appendChild(text);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(body);
+                col.appendChild(wrapper);
+                previewContainer.appendChild(col);
+            });
+        });
+
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            const checkbox = chip.querySelector('.category-checkbox');
+
+            const syncState = () => {
+                chip.classList.toggle('active', checkbox.checked);
+            };
+
+            chip.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'INPUT') {
+                    setTimeout(syncState, 0);
+                }
+            });
+
+            checkbox.addEventListener('change', syncState);
+            syncState();
+        });
+    </script>
 }
