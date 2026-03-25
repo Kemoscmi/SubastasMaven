@@ -3,6 +3,7 @@ using Maven.Application.DTOs;
 using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenModels;
 using Maven.Infraestructure.Repository.Interfaces;
+using BCrypt.Net;
 
 namespace Maven.Application.Services.Implementations
 {
@@ -58,7 +59,6 @@ namespace Maven.Application.Services.Implementations
             var list = await _repository.ListAsync();
             return _mapper.Map<ICollection<UsuarioDTO>>(list);
         }
-
         public async Task UpdateAsync(int id, UsuarioDTO dto)
         {
             if (id <= 0)
@@ -72,17 +72,10 @@ namespace Maven.Application.Services.Implementations
             if (entity is null)
                 throw new KeyNotFoundException($"No existe un usuario con id {id}.");
 
-            try
-            {
-                // Importante: mapear sobre la entidad existente (tracked)
-                _mapper.Map(dto, entity);
+            entity.NombreCompleto = dto.NombreCompleto;
+            entity.Correo = dto.Correo;
 
-                await _repository.UpdateAsync(entity);
-            }
-            catch (AutoMapperMappingException ex)
-            {
-                throw new InvalidOperationException("Error al mapear UsuarioDTO sobre Usuario existente.", ex);
-            }
+            await _repository.UpdateAsync(entity);
         }
 
         public async Task DeleteAsync(int id)
@@ -91,6 +84,44 @@ namespace Maven.Application.Services.Implementations
                 throw new ArgumentOutOfRangeException(nameof(id), "El id debe ser mayor que 0.");
 
             await _repository.DeleteAsync(id);
+        }
+
+
+        public async Task<UsuarioDTO?> LoginAsync(string correo, string password)
+        {
+            if (string.IsNullOrWhiteSpace(correo) || string.IsNullOrWhiteSpace(password))
+                return null;
+
+            var usuario = await _repository.FindByEmailAsync(correo);
+
+            if (usuario == null)
+                return null;
+
+            //  bool esValido = BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash);
+
+            // if (!esValido)
+            //  return null;
+
+            if (usuario.PasswordHash != password)
+                return null;
+
+            return _mapper.Map<UsuarioDTO>(usuario);
+        }
+
+        public async Task CambiarEstadoAsync(int usuarioId, int estadoUsuarioId)
+        {
+            if (usuarioId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(usuarioId), "El id debe ser mayor que 0.");
+
+            if (estadoUsuarioId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(estadoUsuarioId), "El estado debe ser válido.");
+
+            var entity = await _repository.FindByIdAsync(usuarioId);
+
+            if (entity is null)
+                throw new KeyNotFoundException($"No existe un usuario con id {usuarioId}.");
+
+            await _repository.CambiarEstadoAsync(usuarioId, estadoUsuarioId);
         }
     }
 }

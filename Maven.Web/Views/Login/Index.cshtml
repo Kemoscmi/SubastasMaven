@@ -1,0 +1,33 @@
+﻿@model Maven.Web.ViewModels.ViewModelLogin
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card p-4 shadow">
+            <h3 class="text-center mb-3">Iniciar sesión</h3>
+
+            <form asp-action="Index" method="post">
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Correo"></label>
+                    <input asp-for="Correo" class="form-control" />
+                    <span asp-validation-for="Correo" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <button class="btn btn-dark w-100">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</div>

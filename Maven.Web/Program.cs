@@ -1,5 +1,6 @@
 using Maven.Application.Profiles;
 using Maven.Application.Services.Implementations;
+using Microsoft.AspNetCore.Authentication.Cookies;
 // DI Usuario
 using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenData;
@@ -114,6 +115,15 @@ builder.Services.AddDbContext<MavenContext>(options =>
         options.EnableSensitiveDataLogging();
 });
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login";
+        options.AccessDeniedPath = "/Login/Forbidden";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+    });
+
 var app = builder.Build();
 
 
@@ -141,6 +151,9 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseSerilogRequestLogging();
 

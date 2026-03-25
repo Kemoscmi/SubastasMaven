@@ -16,9 +16,18 @@ namespace Maven.Infraestructure.Repository.Interfaces
         Task<Joya?> FindByIdAsync(int id);
         Task<ICollection<Joya>> ListAsync();
 
-        //  Query base para poder proyectar
+    
         IQueryable<Joya> Query();
 
+        Task AddCategoriasAsync(int joyaId, List<int> categoriaIds);
+        Task AddImagenesAsync(int joyaId, List<string> rutasImagenes);
 
+        Task ReplaceCategoriasAsync(int joyaId, List<int> categoriaIds);
+
+        Task DeleteImagenAsync(int joyaImagenId);
+
+        Task<ICollection<Joya>> ListInactivosAsync();
+
+        Task ToggleEstadoAsync(int id);
     }
 }
