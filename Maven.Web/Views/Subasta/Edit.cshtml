@@ -1,0 +1,153 @@
+﻿@model Maven.Web.Models.SubastaFormViewModel
+
+@{
+    ViewData["Title"] = "Editar Subasta";
+}
+
+<h2 class="mb-4">Editar Subasta</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Subasta.SubastaId" />
+
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <input type="hidden" asp-for="Subasta.JoyaId" />
+
+    <div class="mb-3">
+        <label class="form-label">Joya asignada</label>
+        <input class="form-control" value="@Model.Subasta.Joya?.Nombre" readonly />
+        <div class="form-text">
+            La joya no puede modificarse una vez creada la subasta.
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="Subasta.VendedorId" value="3" />
+
+    <div class="mb-3">
+        <label class="form-label">Vendedor asignado</label>
+        <input class="form-control" value="Daniel Rojas Solís" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.FechaInicio" class="form-label"></label>
+        <input asp-for="Subasta.FechaInicio" type="datetime-local" class="form-control" />
+        <span asp-validation-for="Subasta.FechaInicio" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.FechaCierre" class="form-label"></label>
+        <input asp-for="Subasta.FechaCierre" type="datetime-local" class="form-control" />
+        <span asp-validation-for="Subasta.FechaCierre" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Precio base</label>
+        <div class="input-group">
+            <span class="input-group-text">₡</span>
+            <input type="text"
+                   id="precioBaseDisplay"
+                   class="form-control"
+                   placeholder="Ejemplo: 100,000"
+                   autocomplete="off" />
+        </div>
+        <input type="hidden" asp-for="Subasta.PrecioBase" id="precioBase" />
+        <span asp-validation-for="Subasta.PrecioBase" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Incremento mínimo</label>
+        <div class="input-group">
+            <span class="input-group-text">₡</span>
+            <input type="text"
+                   id="incrementoMinimoDisplay"
+                   class="form-control"
+                   placeholder="Ejemplo: 10,000"
+                   autocomplete="off" />
+        </div>
+        <input type="hidden" asp-for="Subasta.IncrementoMinimo" id="incrementoMinimo" />
+        <span asp-validation-for="Subasta.IncrementoMinimo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.EstadoSubastaId" class="form-label"></label>
+        <select asp-for="Subasta.EstadoSubastaId" class="form-select">
+            <option value="1">BORRADOR</option>
+            <option value="2">PUBLICADA</option>
+        </select>
+        <span asp-validation-for="Subasta.EstadoSubastaId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="Borradores" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const precioBaseDisplay = document.getElementById("precioBaseDisplay");
+            const precioBase = document.getElementById("precioBase");
+
+            const incrementoDisplay = document.getElementById("incrementoMinimoDisplay");
+            const incremento = document.getElementById("incrementoMinimo");
+
+            function soloNumeros(valor) {
+                return valor.replace(/\D/g, "");
+            }
+
+            function formatearMiles(valor) {
+                if (!valor || isNaN(valor)) return "";
+                return Number(valor).toLocaleString("en-US", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+
+            function obtenerEnteroDesdeDecimal(valor) {
+                if (!valor) return "";
+
+                let texto = valor.toString().trim();
+
+                // Si viene como 100000.00
+                if (texto.includes(".")) {
+                    texto = texto.split(".")[0];
+                }
+
+                // Si viene como 100000,00
+                if (texto.includes(",")) {
+                    texto = texto.split(",")[0];
+                }
+
+                texto = texto.replace(/\D/g, "");
+                return texto;
+            }
+
+            function configurarInputMoneda(displayInput, hiddenInput) {
+                const valorInicial = obtenerEnteroDesdeDecimal(hiddenInput.value);
+
+                if (valorInicial) {
+                    displayInput.value = formatearMiles(valorInicial);
+                    hiddenInput.value = valorInicial;
+                }
+
+                displayInput.addEventListener("input", function () {
+                    let limpio = soloNumeros(displayInput.value);
+
+                    if (limpio === "") {
+                        displayInput.value = "";
+                        hiddenInput.value = "";
+                        return;
+                    }
+
+                    displayInput.value = formatearMiles(limpio);
+                    hiddenInput.value = limpio;
+                });
+            }
+
+            configurarInputMoneda(precioBaseDisplay, precioBase);
+            configurarInputMoneda(incrementoDisplay, incremento);
+        });
+    </script>
+}
+

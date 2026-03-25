@@ -1,27 +1,27 @@
 ﻿using Maven.Application.DTOs;
+using Maven.Application.DTOs.Subasta;
 using Maven.Application.Services.Interfaces;
-using Maven.Infraestructure.MavenData;
 using Maven.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace Maven.Web.Controllers
 {
     public class SubastaController : Controller
     {
         private readonly IServiceSubasta _service;
-        private readonly MavenContext _db;
+        private const int UsuarioVendedorSimuladoId = 3;
+        private const string UsuarioVendedorSimuladoNombre = "Daniel Rojas Solís";
 
-        public SubastaController(IServiceSubasta service, MavenContext db)
+        public SubastaController(IServiceSubasta service)
         {
             _service = service;
-            _db = db;
         }
 
         public async Task<IActionResult> Index()
         {
-            var data = await _service.ListAsync();
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.ListVisiblesAsync();
             return View(data);
         }
 
@@ -33,43 +33,100 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
-            await CargarCombosAsync();
-            return View(new SubastaDTO());
+            var ahora = DateTime.Now.AddMinutes(20);
+
+            var dto = new SubastaDTO
+            {
+                FechaInicio = ahora,
+                FechaCierre = ahora.AddHours(2),
+                EstadoSubastaId = 1,
+                VendedorId = 3
+            };
+
+            var vm = await ConstruirSubastaFormVmAsync(dto);
+            return View(vm);
         }
+
+        private void LimpiarValidacionesSubasta()
+        {
+            var clavesAQuitar = ModelState.Keys
+                .Where(k =>
+                    k.StartsWith("Subasta.Joya") ||
+                    k.StartsWith("Subasta.Vendedor") ||
+                    k.StartsWith("Subasta.EstadoSubasta") ||
+                    k.StartsWith("Subasta.Puja") ||
+                    k.StartsWith("Subasta.SubastaResultado"))
+                .ToList();
+
+            foreach (var key in clavesAQuitar)
+            {
+                ModelState.Remove(key);
+            }
+        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(SubastaDTO dto)
+        public async Task<IActionResult> Create(SubastaFormViewModel vm)
         {
+            vm.Subasta.VendedorId = UsuarioVendedorSimuladoId;
+            vm.Subasta.EstadoSubastaId = 1;
+
+            LimpiarValidacionesSubasta();
+
             if (!ModelState.IsValid)
             {
-                await CargarCombosAsync();
-                return View(dto);
+                var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                ViewBag.UsuarioVendedorNombre = UsuarioVendedorSimuladoNombre;
+                return View(vmRecargado);
             }
 
-            await _service.AddAsync(dto);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var nuevoId = await _service.AddAsync(vm.Subasta);
+                TempData["SuccessMessage"] = "Subasta guardada correctamente.";
+                return RedirectToAction(nameof(Borradores));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                ViewBag.UsuarioVendedorNombre = UsuarioVendedorSimuladoNombre;
+                return View(vmRecargado);
+            }
         }
 
         public async Task<IActionResult> Edit(int id)
         {
             var dto = await _service.FindByIdAsync(id);
-            await CargarCombosAsync();
-            return View(dto);
+            var vm = await ConstruirSubastaFormVmAsync(dto);
+            return View(vm);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, SubastaDTO dto)
+        public async Task<IActionResult> Edit(SubastaFormViewModel vm)
         {
+            LimpiarValidacionesSubasta();
+
             if (!ModelState.IsValid)
             {
-                await CargarCombosAsync();
-                return View(dto);
+                var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                return View(vmRecargado);
             }
 
-            await _service.UpdateAsync(id, dto);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _service.UpdateAsync(vm.Subasta.SubastaId, vm.Subasta);
+                TempData["SuccessMessage"] = "Subasta actualizada correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                return View(vmRecargado);
+            }
         }
 
         public async Task<IActionResult> Delete(int id)
@@ -86,141 +143,108 @@ namespace Maven.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task CargarCombosAsync()
-        {
-            var joyas = await _db.Joya.AsNoTracking()
-                .OrderBy(j => j.Nombre)
-                .ToListAsync();
-
-            var vendedores = await _db.Usuario.AsNoTracking()
-                .OrderBy(u => u.NombreCompleto)
-                .ToListAsync();
-
-            var estados = await _db.EstadoSubasta.AsNoTracking()
-                .OrderBy(e => e.NombreEstado) // ajusta si el campo es diferente
-                .ToListAsync();
-
-            ViewBag.JoyaId = new SelectList(joyas, "JoyaId", "Nombre");
-            ViewBag.VendedorId = new SelectList(vendedores, "UsuarioId", "NombreCompleto");
-            ViewBag.EstadoSubastaId = new SelectList(estados, "EstadoSubastaId", "NombreEstado");
-        }
-
         public async Task<IActionResult> Activas()
         {
-            var data = await _db.Subasta
-                .AsNoTracking()
-                .Include(s => s.Joya)
-                .Include(s => s.EstadoSubasta)
-                .Where(s => s.EstadoSubastaId == 3) // ACTIVA
-                .OrderBy(s => s.FechaCierre)
-                .Select(s => new SubastaHistorialSelectVm
-                {
-                    SubastaId = s.SubastaId,
-                    Objeto = s.Joya.Nombre,
-                    Estado = s.EstadoSubasta.NombreEstado,
-                    FechaInicio = s.FechaInicio,
-                    FechaRef = s.FechaCierre, // “fecha estimada de cierre”
-                    ImagenUrl = _db.JoyaImagen
-                        .Where(img => img.JoyaId == s.JoyaId)
-                        .OrderByDescending(img => img.FechaRegistro)
-                        .Select(img => img.UrlImagen)
-                        .FirstOrDefault(),
-                    CantidadPujas = _db.Puja.Count(p => p.SubastaId == s.SubastaId) // ✅ LINQ
-                })
-                .ToListAsync();
-
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.GetActivasAsync();
             return View(data);
         }
 
         public async Task<IActionResult> Finalizadas()
         {
-            var data = await _db.Subasta
-                .AsNoTracking()
-                .Include(s => s.Joya)
-                .Include(s => s.EstadoSubasta)
-                .Where(s => s.EstadoSubastaId == 4 || s.EstadoSubastaId == 5) // FINALIZADA o CANCELADA
-                .OrderByDescending(s => s.FechaCierre)
-                .Select(s => new SubastaHistorialSelectVm
-                {
-                    SubastaId = s.SubastaId,
-                    Objeto = s.Joya.Nombre,
-                    Estado = s.EstadoSubasta.NombreEstado, // FINALIZADA/CANCELADA
-                    FechaInicio = s.FechaInicio,
-                    FechaRef = s.FechaCierre,
-                    ImagenUrl = _db.JoyaImagen
-                        .Where(img => img.JoyaId == s.JoyaId)
-                        .OrderByDescending(img => img.FechaRegistro)
-                        .Select(img => img.UrlImagen)
-                        .FirstOrDefault(),
-                    CantidadPujas = _db.Puja.Count(p => p.SubastaId == s.SubastaId) // ✅ LINQ
-                })
-                .ToListAsync();
-
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.GetFinalizadasAsync();
             return View(data);
         }
 
         public async Task<IActionResult> DetalleVisual(int id, string? origen)
         {
-            var s = await _db.Subasta
-                .AsNoTracking()
-                .Include(x => x.Joya)
-                .ThenInclude(j => j.CondicionObjeto)
-                .Include(x => x.Joya)
-                .ThenInclude(j => j.CategoriaJoya)
-                .Include(x => x.Vendedor)
-                .Include(x => x.EstadoSubasta)
-                .FirstOrDefaultAsync(x => x.SubastaId == id);
-
-            if (s == null) return NotFound();
-
-            // Cantidad total pujas (LINQ)
-            ViewBag.CantidadPujas = await _db.Puja.CountAsync(p => p.SubastaId == id);
-
-            // Imagen principal
-            ViewBag.ImagenUrl = await _db.JoyaImagen
-                .AsNoTracking()
-                .Where(i => i.JoyaId == s.JoyaId)
-                .OrderByDescending(i => i.FechaRegistro)
-                .Select(i => i.UrlImagen)
-                .FirstOrDefaultAsync();
-
-            // Condición del objeto (tabla CondicionObjeto)
-            ViewBag.Condicion = s.Joya.CondicionObjeto?.NombreCondicion;
-
-            // Categorías (JoyaCategoria -> CategoriaJoya)
-            ViewBag.Categorias = s.Joya.CategoriaJoya
-                 .Select(c => c.Nombre)
-                 .OrderBy(n => n)
-                 .ToList();
-
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.GetDetalleVisualAsync(id);
             ViewBag.Origen = origen;
-            return View(s);
+            return View(data);
         }
 
-        public async Task<IActionResult> HistorialPujas(int id, string? origen)
+        public async Task<IActionResult> HistorialPujas(int id, string? origen, bool desdeDetalle = false)
         {
-            // Validación: la subasta debe existir
-            var existe = await _db.Subasta.AsNoTracking().AnyAsync(s => s.SubastaId == id);
-            if (!existe) return NotFound();
-
-            var pujas = await _db.Puja
-                .AsNoTracking()
-                .Include(p => p.Comprador)
-                .Where(p => p.SubastaId == id)                 // ✅ asociadas al ID
-                .OrderBy(p => p.FechaHora)                     // ✅ orden cronológico consistente (vieja → nueva)
-                .Select(p => new PujaHistorialVm
-                {
-                    PujaId = p.PujaId,
-                    SubastaId = p.SubastaId,
-                    Usuario = p.Comprador.NombreCompleto,
-                    MontoOfertado = p.MontoOfertado,
-                    FechaHora = p.FechaHora
-                })
-                .ToListAsync();
-
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.GetHistorialPujasAsync(id);
             ViewBag.Origen = origen;
             ViewBag.SubastaId = id;
-            return View(pujas);
+            ViewBag.DesdeDetalle = desdeDetalle;
+            return View(data);
+        }
+
+        private async Task<SubastaFormViewModel> ConstruirSubastaFormVmAsync(SubastaDTO? dto = null)
+        {
+            var combos = await _service.GetCombosAsync();
+
+            return new SubastaFormViewModel
+            {
+                Subasta = dto ?? new SubastaDTO(),
+
+                Joyas = combos.Joyas.Select(j => new SelectListItem
+                {
+                    Value = j.Id.ToString(),
+                    Text = j.Nombre
+                }),
+
+                Vendedores = combos.Vendedores.Select(v => new SelectListItem
+                {
+                    Value = v.Id.ToString(),
+                    Text = v.Nombre
+                }),
+
+                EstadosSubasta = combos.EstadosSubasta.Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.Nombre
+                })
+            };
+        }
+
+        public async Task<IActionResult> Borradores()
+        {
+            await RevisarEstadosAutomaticosAsync();
+            var data = await _service.GetBorradoresByVendedorAsync(UsuarioVendedorSimuladoId);
+            return View(data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Publicar(int id)
+        {
+            try
+            {
+                await _service.PublicarAsync(id);
+                TempData["SuccessMessage"] = "Subasta publicada correctamente";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Borradores));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Cancelar(int id)
+        {
+            try
+            {
+                await _service.CancelarAsync(id);
+                TempData["SuccessMessage"] = "Subasta cancelada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task RevisarEstadosAutomaticosAsync()
+        {
+            await _service.ActivarPublicadasAsync();
         }
     }
 }

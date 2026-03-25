@@ -33,24 +33,18 @@ namespace Maven.Application.DTOs
 
         [DisplayName("Precio Base")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [Range(typeof(decimal), "0.01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
+        [Range(typeof(decimal), "0,01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
         public decimal PrecioBase { get; set; }
 
         [DisplayName("Incremento Mínimo")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [Range(typeof(decimal), "0.01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
+        [Range(typeof(decimal), "0,01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
         public decimal IncrementoMinimo { get; set; }
 
         [DisplayName("Estado de la Subasta")]
         [Required(ErrorMessage = "Debe seleccionar un {0}")]
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un {0}")]
         public int EstadoSubastaId { get; set; }
-
-        [DisplayName("Fecha de Creación")]
-        public DateTime FechaCreacion { get; set; }
-
-        [DisplayName("Fecha de Publicación")]
-        public DateTime? FechaPublicacion { get; set; } 
 
        
         public JoyaDTO Joya { get; set; } = new();
@@ -60,6 +54,8 @@ namespace Maven.Application.DTOs
        
         public List<PujaDTO> Puja { get; set; } = new();
         public SubastaResultadoDTO? SubastaResultado { get; set; }
-    
-}
+
+        [DisplayName("Cantidad de Pujas")]
+        public int CantidadPujas { get; set; }
+    }
 }

@@ -1,23 +1,18 @@
-﻿@model Maven.Infraestructure.MavenModels.Subasta
+﻿@model Maven.Application.DTOs.Subasta.SubastaDetalleVisualDTO
 @{
     ViewData["Title"] = "Detalle de Subasta";
-    var imagen = ViewBag.ImagenUrl as string;
-    var condicion = ViewBag.Condicion as string;
-    var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
     var origen = ViewBag.Origen as string;
-    int cantidadPujas = ViewBag.CantidadPujas ?? 0;
 }
 
 <h2 class="mb-3">Detalle de Subasta #@Model.SubastaId</h2>
 
 <div class="row g-3">
-    <!-- Imagen -->
     <div class="col-md-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                @if (!string.IsNullOrWhiteSpace(imagen))
+                @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
                 {
-                    <img src="@imagen" class="img-fluid rounded" style="width:100%; height:320px; object-fit:cover;" />
+                    <img src="@Model.ImagenUrl" class="img-fluid rounded" style="width:100%; height:320px; object-fit:cover;" />
                 }
                 else
                 {
@@ -29,10 +24,7 @@
         </div>
     </div>
 
-    <!-- Contenido -->
     <div class="col-md-8">
-
-        <!-- Card: Objeto -->
         <div class="card shadow-sm mb-3">
             <div class="card-header bg-body">
                 <div class="d-flex align-items-center gap-2">
@@ -42,23 +34,23 @@
             </div>
 
             <div class="card-body">
-                <h4 class="mb-1">@Model.Joya.Nombre</h4>
-                <p class="text-muted mb-3">@Model.Joya.Descripcion</p>
+                <h4 class="mb-1">@Model.NombreJoya</h4>
+                <p class="text-muted mb-3">@Model.DescripcionJoya</p>
 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="small text-muted">Condición</div>
                         <div class="fw-semibold">
-                            @(string.IsNullOrWhiteSpace(condicion) ? "Sin condición" : condicion)
+                            @(string.IsNullOrWhiteSpace(Model.Condicion) ? "Sin condición" : Model.Condicion)
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="small text-muted">Categorías</div>
                         <div class="fw-semibold">
-                            @if (categorias.Any())
+                            @if (Model.Categorias.Any())
                             {
-                                @string.Join(", ", categorias)
+                                @string.Join(", ", Model.Categorias)
                             }
                             else
                             {
@@ -70,7 +62,6 @@
             </div>
         </div>
 
-        <!-- Card: Subasta -->
         <div class="card shadow-sm">
             <div class="card-header bg-body">
                 <div class="d-flex align-items-center gap-2">
@@ -92,42 +83,53 @@
 
                     <div class="col-md-6">
                         <div class="small text-muted">Precio base</div>
-                        <div class="fw-semibold">₡@Model.PrecioBase</div>
+                        <div class="fw-semibold">₡@Model.PrecioBase.ToString("N0")</div>
                     </div>
                     <div class="col-md-6">
                         <div class="small text-muted">Incremento mínimo</div>
-                        <div class="fw-semibold">₡@Model.IncrementoMinimo</div>
+                        <div class="fw-semibold">₡@Model.IncrementoMinimo.ToString("N0")</div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="small text-muted">Estado actual</div>
-                        <div class="fw-semibold">@Model.EstadoSubasta.NombreEstado</div>
+                        <div class="fw-semibold">@Model.EstadoActual</div>
                     </div>
                     <div class="col-md-6">
                         <div class="small text-muted">Cantidad total de pujas</div>
-                        <div class="fw-semibold">@cantidadPujas</div>
+                        <div class="fw-semibold">@Model.CantidadPujas</div>
                     </div>
 
                     <div class="col-12">
                         <div class="small text-muted">Vendedor</div>
-                        <div class="fw-semibold">@Model.Vendedor.NombreCompleto</div>
+                        <div class="fw-semibold">@Model.Vendedor</div>
                     </div>
                 </div>
 
                 <hr class="my-3" />
 
-                <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-outline-secondary"
-                       asp-action="HistorialPujas"
-                       asp-route-id="@Model.SubastaId"
-                       asp-route-origen="@origen">
-                        <i class="bi bi-clock-history me-1"></i>Ver historial de pujas
-                    </a>
-
+                <a class="btn btn-outline-secondary"
+                   asp-action="HistorialPujas"
+                   asp-route-id="@Model.SubastaId"
+                   asp-route-origen="@origen"
+                   asp-route-desdeDetalle="true">
+                    <i class="bi bi-clock-history me-1"></i>Ver historial de pujas
+                </a>
                     @if (origen == "finalizadas")
                     {
                         <a class="maven-back" asp-action="Finalizadas">
                             ← Volver a subastas finalizadas
+                        </a>
+                    }
+                    else if (origen == "borradores")
+                    {
+                        <a class="maven-back" asp-action="Borradores">
+                            ← Volver a subastas editables
+                        </a>
+                    }
+                    else if (origen == "index")
+                    {
+                        <a class="maven-back" asp-action="Index">
+                            ← Volver a todas las subastas
                         </a>
                     }
                     else
@@ -139,6 +141,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>

@@ -1,7 +1,9 @@
-﻿@model IEnumerable<Maven.Web.Models.PujaHistorialVm>
+﻿@model IEnumerable<Maven.Application.DTOs.Subasta.PujaHistorialDTO>
 @{
     ViewData["Title"] = "Historial de Pujas";
     int subastaId = ViewBag.SubastaId ?? 0;
+    var origen = ViewBag.Origen as string;
+    bool desdeDetalle = ViewBag.DesdeDetalle ?? false;
 }
 
 <h2>Historial de Pujas (Subasta #@subastaId)</h2>
@@ -27,7 +29,7 @@ else
             {
                 <tr>
                     <td>@p.Usuario</td>
-                    <td>₡@p.MontoOfertado</td>
+                    <td>₡@p.MontoOfertado.ToString("N0")</td>
                     <td>@p.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
                 </tr>
             }
@@ -35,9 +37,42 @@ else
     </table>
 }
 
-<a class="maven-back"
-   asp-action="DetalleVisual"
-   asp-route-id="@ViewBag.SubastaId"
-   asp-route-origen="@ViewBag.Origen">
-    ← Volver al detalle
-</a>
+@if (desdeDetalle)
+{
+    <a class="maven-back"
+       asp-action="DetalleVisual"
+       asp-route-id="@subastaId"
+       asp-route-origen="@origen">
+        ← Volver al detalle
+    </a>
+}
+else if (origen == "finalizadas")
+{
+    <a class="maven-back" asp-action="Finalizadas">
+        ← Volver a subastas finalizadas
+    </a>
+}
+else if (origen == "activas")
+{
+    <a class="maven-back" asp-action="Activas">
+        ← Volver a subastas activas
+    </a>
+}
+else if (origen == "borradores")
+{
+    <a class="maven-back" asp-action="Borradores">
+        ← Volver a subastas editables
+    </a>
+}
+else if (origen == "index")
+{
+    <a class="maven-back" asp-action="Index">
+        ← Volver a todas las subastas
+    </a>
+}
+else
+{
+    <a class="maven-back" asp-action="Index">
+        ← Volver a subastas
+    </a>
+}

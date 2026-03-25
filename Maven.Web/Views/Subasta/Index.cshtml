@@ -1,0 +1,90 @@
+﻿@model IEnumerable<Maven.Application.DTOs.SubastaDTO>
+
+@{
+    ViewData["Title"] = "Todas las Subastas";
+}
+
+<h2 class="mb-4">Todas las Subastas</h2>
+
+<div class="alert alert-light border">
+    Las subastas publicadas cambian automáticamente a activas cuando se alcanza su fecha de inicio.
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+
+<div class="mb-3 d-flex flex-wrap gap-2">
+    <a asp-action="Create" class="btn btn-primary">Nueva subasta</a>
+    <a asp-action="Borradores" class="btn btn-outline-warning">Editables</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Ver Todas</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        No hay subastas registradas.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Joya</th>
+                <th>Vendedor</th>
+                <th>Fecha inicio</th>
+                <th>Fecha cierre</th>
+                <th>Precio base</th>
+                <th>Incremento mínimo</th>
+                <th>Pujas</th>
+                <th>Estado</th>
+                <th style="width:280px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.Joya?.Nombre</td>
+                    <td>@s.Vendedor?.NombreCompleto</td>
+                    <td>@s.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@s.FechaCierre.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>₡@s.PrecioBase.ToString("N0")</td>
+                    <td>₡@s.IncrementoMinimo.ToString("N0")</td>
+                    <td><span class="badge bg-secondary">@s.CantidadPujas</span></td>
+                    <td>@s.EstadoSubasta?.NombreEstado</td>
+                    <td class="text-center">
+                        <a asp-action="DetalleVisual"
+                           asp-route-id="@s.SubastaId"
+                           asp-route-origen="index"
+                           class="btn btn-sm btn-info">
+                            Detalle
+                        </a>
+
+                        @if (s.CantidadPujas == 0 && s.EstadoSubastaId != 5 && s.EstadoSubastaId != 4)
+                        {
+                            <form asp-action="Cancelar" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@s.SubastaId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Cancelar
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
