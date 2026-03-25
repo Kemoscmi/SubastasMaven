@@ -236,6 +236,12 @@ public partial class MavenContext : DbContext
         {
             entity.HasKey(e => e.SubastaId).HasName("PK__Subasta__46C5CE1A567FE639");
 
+            entity.ToTable("Subasta", tb =>
+            {
+                tb.HasTrigger("TR_Subasta_AfterInsert");
+                tb.HasTrigger("TR_Subasta_AfterUpdate");
+            });
+
             entity.HasIndex(e => new { e.EstadoSubastaId, e.FechaInicio, e.FechaCierre }, "IX_Subasta_Estado_Fechas");
 
             entity.Property(e => e.FechaCierre).HasPrecision(0);

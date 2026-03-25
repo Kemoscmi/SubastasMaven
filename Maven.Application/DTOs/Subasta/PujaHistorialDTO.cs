@@ -1,10 +1,10 @@
-﻿namespace Maven.Web.Models
+﻿namespace Maven.Application.DTOs.Subasta
 {
-    public class PujaHistorialVm
+    public record PujaHistorialDTO
     {
         public long PujaId { get; set; }
         public int SubastaId { get; set; }
-        public string Usuario { get; set; } = "";
+        public string Usuario { get; set; } = string.Empty;
         public decimal MontoOfertado { get; set; }
         public DateTime FechaHora { get; set; }
     }

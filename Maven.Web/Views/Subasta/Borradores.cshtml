@@ -1,0 +1,128 @@
+﻿@model IEnumerable<Maven.Application.DTOs.Subasta.SubastaBorradorDTO>
+
+@{
+    ViewData["Title"] = "Subastas Editables";
+}
+
+<h2 class="mb-4">Subastas Editables</h2>
+
+<div class="alert alert-light border">
+    Las subastas publicadas cambian automáticamente a activas cuando se alcanza su fecha de inicio.
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+
+<div class="mb-3 d-flex flex-wrap gap-2">
+    <a asp-action="Create" class="btn btn-primary">Nueva subasta</a>
+    <a asp-action="Borradores" class="btn btn-outline-warning">Editables</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Ver Todas</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        No hay subastas editables.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Objeto</th>
+                <th>Fecha inicio</th>
+                <th>Fecha cierre</th>
+                <th>Precio base</th>
+                <th>Incremento mínimo</th>
+                <th>Pujas</th>
+                <th>Estado</th>
+                <th style="width:320px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td style="width:120px">
+                        @if (!string.IsNullOrWhiteSpace(s.ImagenUrl))
+                        {
+                            <img src="@s.ImagenUrl" style="width:110px; height:80px; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin imagen</span>
+                        }
+                    </td>
+
+                    <td>@s.Objeto</td>
+
+                    <td>@s.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td>@s.FechaCierre.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td>₡@s.PrecioBase.ToString("N0")</td>
+
+                    <td>₡@s.IncrementoMinimo.ToString("N0")</td>
+
+                    <td>@s.CantidadPujas</td>
+
+                    <td>
+                        <span class="badge bg-secondary">@s.Estado</span>
+                    </td>
+
+                    <td class="text-center">
+
+                        <!-- DETALLE -->
+                        <a asp-action="DetalleVisual"
+                           asp-route-id="@s.SubastaId"
+                           asp-route-origen="borradores"
+                           class="btn btn-sm btn-info">
+                            Detalle
+                        </a>
+
+                        <!-- EDITAR -->
+                        <a asp-action="Edit"
+                           asp-route-id="@s.SubastaId"
+                           class="btn btn-sm btn-warning">
+                            Editar
+                        </a>
+
+                        <!-- PUBLICAR (solo BORRADOR) -->
+                        @if (s.Estado?.ToUpper() == "BORRADOR")
+                        {
+                            <form asp-action="Publicar" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@s.SubastaId" />
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    Publicar
+                                </button>
+                            </form>
+                        }
+
+                        <!-- CANCELAR -->
+                        <form asp-action="Cancelar" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@s.SubastaId" />
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Cancelar
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

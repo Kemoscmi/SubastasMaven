@@ -1,9 +1,14 @@
-﻿@model IEnumerable<Maven.Web.Models.SubastaHistorialSelectVm>
+﻿@model IEnumerable<Maven.Application.DTOs.Subasta.SubastaHistorialDTO>
 @{
     ViewData["Title"] = "Subastas Activas";
 }
 
 <h2>Subastas Activas</h2>
+
+<div class="alert alert-light border">
+    Las subastas publicadas cambian automáticamente a activas cuando se alcanza su fecha de inicio.
+</div>
+
 
 <table class="table table-striped table-bordered align-middle">
     <thead>
@@ -42,7 +47,13 @@
                         Ver detalle
                     </a>
 
-                    <a class="btn btn-sm btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@s.SubastaId">Historial</a>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       asp-action="HistorialPujas"
+                       asp-route-id="@s.SubastaId"
+                       asp-route-origen="activas"
+                       asp-route-desdeDetalle="false">
+                        Historial
+                    </a>
                 </td>
             </tr>
         }

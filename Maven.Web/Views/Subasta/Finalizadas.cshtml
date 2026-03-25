@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Maven.Web.Models.SubastaHistorialSelectVm>
+﻿@model IEnumerable<Maven.Application.DTOs.Subasta.SubastaHistorialDTO>
 @{
     ViewData["Title"] = "Subastas Finalizadas";
 }
@@ -41,7 +41,13 @@
                        asp-route-origen="finalizadas">
                         Ver detalle
                     </a>
-                    <a class="btn btn-sm btn-outline-secondary" asp-action="HistorialPujas" asp-route-id="@s.SubastaId">Historial</a>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       asp-action="HistorialPujas"
+                       asp-route-id="@s.SubastaId"
+                       asp-route-origen="finalizadas"
+                       asp-route-desdeDetalle="false">
+                        Historial
+                    </a>
                 </td>
             </tr>
         }

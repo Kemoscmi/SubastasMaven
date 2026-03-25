@@ -1,0 +1,212 @@
+﻿@model Maven.Web.Models.SubastaFormViewModel
+
+@{
+    ViewData["Title"] = "Crear Subasta";
+}
+
+<h2 class="mb-4">Crear Subasta</h2>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="Subasta.EstadoSubastaId" value="1" />
+
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.JoyaId" class="form-label"></label>
+        <select asp-for="Subasta.JoyaId" asp-items="Model.Joyas" class="form-select">
+            <option value="">Seleccione una joya</option>
+        </select>
+        <span asp-validation-for="Subasta.JoyaId" class="text-danger"></span>
+    </div>
+
+    <input type="hidden" asp-for="Subasta.VendedorId" value="3" />
+
+    <div class="mb-3">
+        <label class="form-label">Vendedor asignado</label>
+        <input class="form-control" value="Daniel Rojas Solís" readonly />
+        <div class="form-text">
+            Este usuario se asigna automáticamente mediante la variable lógica simulada.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.FechaInicio" class="form-label"></label>
+        <input asp-for="Subasta.FechaInicio"
+               id="fechaInicio"
+               type="datetime-local"
+               class="form-control"
+               value="@Model.Subasta.FechaInicio.ToString("yyyy-MM-ddTHH:mm")" />
+        <span asp-validation-for="Subasta.FechaInicio" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Subasta.FechaCierre" class="form-label"></label>
+        <input asp-for="Subasta.FechaCierre"
+               id="fechaCierre"
+               type="datetime-local"
+               class="form-control"
+               value="@Model.Subasta.FechaCierre.ToString("yyyy-MM-ddTHH:mm")" />
+        <span asp-validation-for="Subasta.FechaCierre" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Precio base</label>
+        <div class="input-group">
+            <span class="input-group-text">₡</span>
+            <input type="text"
+                   id="precioBaseDisplay"
+                   class="form-control"
+                   placeholder="Ejemplo: 100,000"
+                   autocomplete="off" />
+        </div>
+        <input type="hidden" asp-for="Subasta.PrecioBase" id="precioBase" />
+        <span asp-validation-for="Subasta.PrecioBase" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Incremento mínimo</label>
+        <div class="input-group">
+            <span class="input-group-text">₡</span>
+            <input type="text"
+                   id="incrementoMinimoDisplay"
+                   class="form-control"
+                   placeholder="Ejemplo: 10,000"
+                   autocomplete="off" />
+        </div>
+        <input type="hidden" asp-for="Subasta.IncrementoMinimo" id="incrementoMinimo" />
+        <span asp-validation-for="Subasta.IncrementoMinimo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <input class="form-control" value="BORRADOR" readonly />
+        <div class="form-text">
+            Al guardar, la subasta se registrará inicialmente en estado borrador.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inicio = document.getElementById("fechaInicio");
+            const cierre = document.getElementById("fechaCierre");
+
+            const precioBaseDisplay = document.getElementById("precioBaseDisplay");
+            const precioBase = document.getElementById("precioBase");
+
+            const incrementoDisplay = document.getElementById("incrementoMinimoDisplay");
+            const incremento = document.getElementById("incrementoMinimo");
+
+            function pad(n) {
+                return n.toString().padStart(2, '0');
+            }
+
+            function toDateTimeLocalString(date) {
+                return date.getFullYear() + "-" +
+                    pad(date.getMonth() + 1) + "-" +
+                    pad(date.getDate()) + "T" +
+                    pad(date.getHours()) + ":" +
+                    pad(date.getMinutes());
+            }
+
+            function actualizarCierre() {
+                if (!inicio.value) return;
+
+                const fechaInicio = new Date(inicio.value);
+                const fechaCierre = new Date(fechaInicio.getTime() + (2 * 60 * 60 * 1000));
+
+                cierre.value = toDateTimeLocalString(fechaCierre);
+                cierre.min = toDateTimeLocalString(fechaCierre);
+            }
+
+            const ahora = new Date();
+            const ahoraMas20 = new Date(ahora.getTime() + (20 * 60 * 1000));
+            const ahoraTexto = toDateTimeLocalString(ahoraMas20);
+
+            inicio.min = ahoraTexto;
+
+            if (!inicio.value) {
+                inicio.value = ahoraTexto;
+            }
+
+            actualizarCierre();
+            inicio.addEventListener("change", actualizarCierre);
+
+            function soloNumeros(valor) {
+                return valor.replace(/\D/g, "");
+            }
+
+            function formatearMiles(valor) {
+                if (!valor) return "";
+                return Number(valor).toLocaleString("en-US");
+            }
+
+            function configurarInputMoneda(displayInput, hiddenInput) {
+                displayInput.addEventListener("input", function () {
+                    let limpio = soloNumeros(displayInput.value);
+
+                    if (limpio === "") {
+                        displayInput.value = "";
+                        hiddenInput.value = "";
+                        return;
+                    }
+
+                    displayInput.value = formatearMiles(limpio);
+                    hiddenInput.value = limpio;
+                });
+            }
+
+            configurarInputMoneda(precioBaseDisplay, precioBase);
+            configurarInputMoneda(incrementoDisplay, incremento);
+        });
+    </script>
+}
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inicio = document.getElementById("fechaInicio");
+            const cierre = document.getElementById("fechaCierre");
+
+            function pad(n) {
+                return n.toString().padStart(2, '0');
+            }
+
+            function toDateTimeLocalString(date) {
+                return date.getFullYear() + "-" +
+                    pad(date.getMonth() + 1) + "-" +
+                    pad(date.getDate()) + "T" +
+                    pad(date.getHours()) + ":" +
+                    pad(date.getMinutes());
+            }
+
+            function actualizarCierre() {
+                if (!inicio.value) return;
+
+                const fechaInicio = new Date(inicio.value);
+                const fechaCierre = new Date(fechaInicio.getTime() + (2 * 60 * 60 * 1000));
+
+                cierre.value = toDateTimeLocalString(fechaCierre);
+                cierre.min = toDateTimeLocalString(fechaCierre);
+            }
+
+            const ahora = new Date();
+            const ahoraTexto = toDateTimeLocalString(ahora);
+
+            inicio.min = ahoraTexto;
+
+            if (!inicio.value) {
+                inicio.value = ahoraTexto;
+            }
+
+            actualizarCierre();
+
+            inicio.addEventListener("change", actualizarCierre);
+        });
+    </script>

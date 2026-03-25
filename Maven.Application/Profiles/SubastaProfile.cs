@@ -18,8 +18,8 @@ namespace Maven.Application.Profiles
                 .ForMember(d => d.Joya, o => o.MapFrom(s => s.Joya))
                 .ForMember(d => d.Vendedor, o => o.MapFrom(s => s.Vendedor))
                 .ForMember(d => d.EstadoSubasta, o => o.MapFrom(s => s.EstadoSubasta))
+                .ForMember(d => d.CantidadPujas, o => o.MapFrom(s => s.Puja != null ? s.Puja.Count : 0))
 
-          
                 .ForMember(d => d.Puja, o => o.Ignore())
                 .ForMember(d => d.SubastaResultado, o => o.Ignore());
 

@@ -25,7 +25,7 @@ namespace Maven.Application.DTOs
 
         [DisplayName("Monto Ofertado")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [Range(typeof(decimal), "0.01", "999999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
+        [Range(typeof(decimal), "0,01", "999999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
         public decimal MontoOfertado { get; set; }
 
         [DisplayName("Fecha y Hora")]
