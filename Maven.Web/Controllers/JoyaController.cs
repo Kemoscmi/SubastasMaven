@@ -316,6 +316,7 @@ namespace Maven.Web.Controllers
 
       
             await _service.UpdateAsync(id, dto);
+            await _service.ReplaceCategoriasAsync(id, categoriaIds ?? new List<int>());
 
             // Reemplazar categorías seleccionadas
             // Eliminar imágenes marcadas que si se qiere eliiminar
@@ -354,8 +355,17 @@ namespace Maven.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _service.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _service.DeleteAsync(id);
+                TempData["Mensaje"] = "La joya se desactivó correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = ex.Message;
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
         }
 
         public async Task<IActionResult> Inactivos()

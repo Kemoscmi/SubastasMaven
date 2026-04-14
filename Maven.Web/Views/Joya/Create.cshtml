@@ -163,7 +163,10 @@
             <textarea asp-for="Descripcion"
                       class="form-control"
                       rows="4"
-                      placeholder="Escriba una descripción detallada de la joya"></textarea>
+                      minlength="20"
+                      maxlength="1000"
+                      placeholder="Escriba una descripción detallada de la joya (mínimo 20 caracteres)"></textarea>
+            <small class="mj-soft-note">La descripción debe tener al menos 20 caracteres.</small>
             <span asp-validation-for="Descripcion" class="text-danger"></span>
         </div>
 
