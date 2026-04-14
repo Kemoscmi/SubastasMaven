@@ -210,6 +210,13 @@ namespace Maven.Application.Services.Implementations
             if (s is null)
                 throw new KeyNotFoundException($"No existe una subasta con id {id}");
 
+            var pujasOrdenadas = s.Puja?
+                .OrderByDescending(p => p.MontoOfertado)
+                .ThenBy(p => p.FechaHora)
+                .ToList() ?? new List<Puja>();
+
+            var pujaLider = pujasOrdenadas.FirstOrDefault();
+
             return new SubastaDetalleVisualDTO
             {
                 SubastaId = s.SubastaId,
@@ -217,9 +224,9 @@ namespace Maven.Application.Services.Implementations
                 DescripcionJoya = s.Joya?.Descripcion ?? string.Empty,
                 Condicion = s.Joya?.CondicionObjeto?.NombreCondicion,
                 Categorias = s.Joya?.CategoriaJoya?
-                .Select(c => c.Nombre)
-                .OrderBy(n => n)
-                .ToList() ?? new List<string>(),
+                    .Select(c => c.Nombre)
+                    .OrderBy(n => n)
+                    .ToList() ?? new List<string>(),
                 FechaInicio = s.FechaInicio,
                 FechaCierre = s.FechaCierre,
                 PrecioBase = s.PrecioBase,
@@ -230,10 +237,27 @@ namespace Maven.Application.Services.Implementations
                 ImagenUrl = s.Joya?.JoyaImagen?
                     .OrderByDescending(img => img.FechaRegistro)
                     .Select(img => img.UrlImagen)
-                    .FirstOrDefault()
+                    .FirstOrDefault(),
+
+                // CAMBIOS AQUÍ
+                TienePujas = pujasOrdenadas.Any(),
+                PujaActual = pujaLider?.MontoOfertado ?? 0,
+                UsuarioLider = pujaLider?.Comprador?.NombreCompleto ?? "Sin usuario líder",
+
+                Finalizada = s.EstadoSubastaId == 4 || s.EstadoSubastaId == 5,
+                HistorialPujas = s.Puja?
+                    .OrderByDescending(p => p.FechaHora)
+                    .Select(p => new PujaHistorialDTO
+                    {
+                        PujaId = p.PujaId,
+                        SubastaId = p.SubastaId,
+                        Usuario = p.Comprador?.NombreCompleto ?? string.Empty,
+                        MontoOfertado = p.MontoOfertado,
+                        FechaHora = p.FechaHora
+                    })
+                    .ToList() ?? new List<PujaHistorialDTO>()
             };
         }
-
         public async Task<ICollection<PujaHistorialDTO>> GetHistorialPujasAsync(int subastaId)
         {
             if (subastaId <= 0)
@@ -347,6 +371,47 @@ namespace Maven.Application.Services.Implementations
             await _repository.SaveChangesAsync();
             return subastas.Count;
         }
+
+        public async Task<int> CerrarSubastasVencidasAsync()
+        {
+            var subastas = await _repository.GetActivasParaCerrarAsync();
+
+            if (subastas == null || !subastas.Any())
+                return 0;
+
+            foreach (var subasta in subastas)
+            {
+                // Si ya tenía resultado, solo aseguramos estado y seguimos
+                if (subasta.SubastaResultado != null)
+                {
+                    subasta.EstadoSubastaId = 4; // Finalizada
+                    subasta.EstadoSubasta = null!;
+                    continue;
+                }
+
+                // Regla: gana la puja de mayor monto.
+                // En empate, gana la más temprana.
+                var pujaGanadora = subasta.Puja?
+                    .OrderByDescending(p => p.MontoOfertado)
+                    .ThenBy(p => p.FechaHora)
+                    .FirstOrDefault();
+
+                subasta.EstadoSubastaId = 4; // Finalizada
+                subasta.EstadoSubasta = null!;
+
+                subasta.SubastaResultado = new SubastaResultado
+                {
+                    SubastaId = subasta.SubastaId,
+                    GanadorId = pujaGanadora?.CompradorId,
+                    PujaGanadoraId = pujaGanadora?.PujaId
+                };
+            }
+
+            await _repository.SaveChangesAsync();
+            return subastas.Count;
+        }
+
+
 
         public async Task<ICollection<SubastaDTO>> ListVisiblesAsync()
         {

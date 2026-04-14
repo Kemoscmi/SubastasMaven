@@ -27,7 +27,7 @@ namespace Maven.Infraestructure.Repository.Implementations
         public async Task<ICollection<Joya>> ListAsync()
         {
             return await _db.Joya
-      .Where(j => j.EstadoObjetoId == 1) //  SOLO ACTIVOS
+      .Where(j => j.EstadoObjetoId == 1) 
       .AsNoTracking()
       .AsSplitQuery()
       .Include(j => j.EstadoObjeto)
@@ -84,12 +84,12 @@ namespace Maven.Infraestructure.Repository.Implementations
             if (entity is null)
                 return;
 
-            // Validar que no tenga subastas
+            
             if (entity.Subasta != null && entity.Subasta.Any())
                 throw new Exception("No se puede eliminar la joya porque ya ha sido subastada.");
 
            
-            entity.EstadoObjetoId = 2; // INACTIVO
+            entity.EstadoObjetoId = 2;
 
             _db.Joya.Update(entity);
             await _db.SaveChangesAsync();
@@ -144,7 +144,6 @@ namespace Maven.Infraestructure.Repository.Implementations
             if (joya == null)
                 throw new Exception("No se encontró la joya.");
 
-            // Limpiar categorías actuales
             joya.CategoriaJoya.Clear();
 
             if (categoriaIds != null && categoriaIds.Count > 0)
@@ -177,7 +176,7 @@ namespace Maven.Infraestructure.Repository.Implementations
         public async Task<ICollection<Joya>> ListInactivosAsync()
         {
             return await _db.Joya
-                .Where(j => j.EstadoObjetoId == 2) //  INACTIVOS
+                .Where(j => j.EstadoObjetoId == 2) 
                 .AsNoTracking()
                 .Include(j => j.EstadoObjeto)
                 .Include(j => j.CondicionObjeto)

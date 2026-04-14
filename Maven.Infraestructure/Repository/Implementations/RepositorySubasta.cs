@@ -128,6 +128,7 @@ namespace Maven.Infraestructure.Repository.Implementations
                 .Include(s => s.Vendedor)
                 .Include(s => s.EstadoSubasta)
                 .Include(s => s.Puja)
+                     .ThenInclude(p => p.Comprador)
                 .FirstOrDefaultAsync(s => s.SubastaId == id);
         }
 
@@ -159,6 +160,17 @@ namespace Maven.Infraestructure.Repository.Implementations
             return await _db.Subasta
                 .Include(s => s.EstadoSubasta)
                 .Where(s => s.EstadoSubastaId == 2 && s.FechaInicio <= DateTime.Now)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Subasta>> GetActivasParaCerrarAsync()
+        {
+            return await _db.Subasta
+                .Include(s => s.Puja)
+                    .ThenInclude(p => p.Comprador)
+                .Include(s => s.SubastaResultado)
+                .Include(s => s.EstadoSubasta)
+                .Where(s => s.EstadoSubastaId == 3 && s.FechaCierre <= DateTime.Now)
                 .ToListAsync();
         }
 

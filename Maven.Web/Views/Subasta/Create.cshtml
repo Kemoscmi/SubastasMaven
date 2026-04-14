@@ -115,28 +115,17 @@
                     pad(date.getMinutes());
             }
 
-            function actualizarCierre() {
-                if (!inicio.value) return;
-
-                const fechaInicio = new Date(inicio.value);
-                const fechaCierre = new Date(fechaInicio.getTime() + (2 * 60 * 60 * 1000));
-
-                cierre.value = toDateTimeLocalString(fechaCierre);
-                cierre.min = toDateTimeLocalString(fechaCierre);
-            }
-
             const ahora = new Date();
             const ahoraMas20 = new Date(ahora.getTime() + (20 * 60 * 1000));
             const ahoraTexto = toDateTimeLocalString(ahoraMas20);
 
-            inicio.min = ahoraTexto;
+            if (inicio) {
+                inicio.min = ahoraTexto;
 
-            if (!inicio.value) {
-                inicio.value = ahoraTexto;
+                if (!inicio.value) {
+                    inicio.value = ahoraTexto;
+                }
             }
-
-            actualizarCierre();
-            inicio.addEventListener("change", actualizarCierre);
 
             function soloNumeros(valor) {
                 return valor.replace(/\D/g, "");
@@ -167,46 +156,3 @@
         });
     </script>
 }
-
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const inicio = document.getElementById("fechaInicio");
-            const cierre = document.getElementById("fechaCierre");
-
-            function pad(n) {
-                return n.toString().padStart(2, '0');
-            }
-
-            function toDateTimeLocalString(date) {
-                return date.getFullYear() + "-" +
-                    pad(date.getMonth() + 1) + "-" +
-                    pad(date.getDate()) + "T" +
-                    pad(date.getHours()) + ":" +
-                    pad(date.getMinutes());
-            }
-
-            function actualizarCierre() {
-                if (!inicio.value) return;
-
-                const fechaInicio = new Date(inicio.value);
-                const fechaCierre = new Date(fechaInicio.getTime() + (2 * 60 * 60 * 1000));
-
-                cierre.value = toDateTimeLocalString(fechaCierre);
-                cierre.min = toDateTimeLocalString(fechaCierre);
-            }
-
-            const ahora = new Date();
-            const ahoraTexto = toDateTimeLocalString(ahora);
-
-            inicio.min = ahoraTexto;
-
-            if (!inicio.value) {
-                inicio.value = ahoraTexto;
-            }
-
-            actualizarCierre();
-
-            inicio.addEventListener("change", actualizarCierre);
-        });
-    </script>
