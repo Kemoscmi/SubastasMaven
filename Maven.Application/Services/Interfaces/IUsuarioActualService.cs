@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace Maven.Application.Services.Interfaces
 {
-    internal class IUsuarioActualService
+    public interface IUsuarioActualService
     {
+        int GetUsuarioId();
+        string? GetNombreUsuario();
+        string? GetCorreo();
+        bool IsAuthenticated();
+
+
+
     }
 }

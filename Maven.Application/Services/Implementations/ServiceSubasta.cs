@@ -11,11 +11,19 @@ namespace Maven.Application.Services.Implementations
     {
         private readonly IRepositorySubasta _repository;
         private readonly IMapper _mapper;
+        private readonly IRepositorySubastaResultado _repositorySubastaResultado;
+        private readonly IRepositoryPago _repositoryPago;
 
-        public ServiceSubasta(IRepositorySubasta repository, IMapper mapper)
+        public ServiceSubasta(
+      IRepositorySubasta repository,
+      IRepositorySubastaResultado repositorySubastaResultado,
+      IRepositoryPago repositoryPago,
+      IMapper mapper)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _repository = repository;
+            _repositorySubastaResultado = repositorySubastaResultado;
+            _repositoryPago = repositoryPago;
+            _mapper = mapper;
         }
 
         public async Task<ICollection<SubastaDTO>> ListAsync()
@@ -417,6 +425,63 @@ namespace Maven.Application.Services.Implementations
         {
             var list = await _repository.ListVisiblesAsync();
             return _mapper.Map<ICollection<SubastaDTO>>(list);
+        }
+
+        public async Task CerrarSubastaAsync(int subastaId)
+        {
+            var subasta = await _repository.FindByIdAsync(subastaId);
+
+            if (subasta is null)
+                throw new KeyNotFoundException("La subasta no existe.");
+
+            if (subasta.EstadoSubastaId == 4)
+                return;
+
+            var pujas = await _repository.GetPujasBySubastaIdAsync(subastaId);
+
+            subasta.EstadoSubastaId = 4;
+
+            await _repository.UpdateAsync(subasta);
+
+            if (subasta.SubastaResultado != null)
+                return;
+
+            var pujaGanadora = pujas
+                .Where(p => p.FechaHora <= subasta.FechaCierre)
+                .OrderByDescending(p => p.MontoOfertado)
+                .ThenBy(p => p.FechaHora)
+                .FirstOrDefault();
+
+            var resultado = new SubastaResultado
+            {
+                SubastaId = subasta.SubastaId,
+                GanadorId = pujaGanadora?.CompradorId,
+                PujaGanadoraId = pujaGanadora?.PujaId,
+                MontoFinal = pujaGanadora?.MontoOfertado,
+                FechaCierre = subasta.FechaCierre
+            };
+
+            await _repositorySubastaResultado.AddAsync(resultado);
+
+            if (pujaGanadora != null)
+            {
+                var pagoExistente = await _repositoryPago.FindBySubastaIdAsync(subasta.SubastaId);
+
+                if (pagoExistente == null)
+                {
+                    var pago = new Pago
+                    {
+                        SubastaId = subasta.SubastaId,
+                        CompradorId = pujaGanadora.CompradorId,
+                        VendedorId = subasta.VendedorId,
+                        Monto = pujaGanadora.MontoOfertado,
+                        FechaRegistro = DateTime.Now,
+                        EstadoPagoId = 1
+                    };
+
+                    await _repositoryPago.AddAsync(pago);
+                }
+            }
         }
     }
 }
