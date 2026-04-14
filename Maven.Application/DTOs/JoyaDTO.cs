@@ -30,7 +30,7 @@ namespace Maven.Application.DTOs
 
         [DisplayName("Descripción")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [StringLength(1000, ErrorMessage = "{0} no puede exceder los {1} caracteres")]
+        [StringLength(1000, MinimumLength = 20, ErrorMessage = "{0} debe tener entre {2} y {1} caracteres")]
         public string Descripcion { get; set; } = string.Empty;
 
         [DisplayName("Estado del Objeto")]
