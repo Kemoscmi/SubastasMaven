@@ -2,6 +2,7 @@
 using Maven.Infraestructure.MavenModels;
 using Maven.Infraestructure.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Maven.Infraestructure.Repository.Implementations
 {
@@ -17,6 +18,17 @@ namespace Maven.Infraestructure.Repository.Implementations
         public IQueryable<Puja> Query()
         {
             return _db.Puja.AsNoTracking();
+        }
+
+        public async Task AddAsync(Puja entity)
+        {
+            await _db.Puja.AddAsync(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _db.Database.BeginTransactionAsync();
         }
     }
 }

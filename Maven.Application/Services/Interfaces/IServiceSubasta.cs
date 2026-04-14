@@ -26,6 +26,8 @@ namespace Maven.Application.Services.Interfaces
         Task<int> ActivarPublicadasAsync();
 
         Task<ICollection<SubastaDTO>> ListVisiblesAsync();
+        Task CerrarSubastaAsync(int subastaId);
+
 
     }
 }

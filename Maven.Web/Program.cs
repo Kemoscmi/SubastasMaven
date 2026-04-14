@@ -70,10 +70,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IRepositoryUsuario, RepositoryUsuario>();
 builder.Services.AddScoped<IRepositorySubasta, RepositorySubasta>();
 builder.Services.AddScoped<IRepositoryPuja, RepositoryPuja>();
-
+builder.Services.AddScoped<IRepositorySubastaResultado, RepositorySubastaResultado>();
+builder.Services.AddScoped<IRepositoryPago, RepositoryPago>();
 // Services
 builder.Services.AddScoped<IServiceUsuario, ServiceUsuario>();
 builder.Services.AddScoped<IServiceSubasta, ServiceSubasta>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUsuarioActualService, UsuarioActualService>();
+builder.Services.AddScoped<IServicePuja, ServicePuja>();
 
 // Repositories
 builder.Services.AddScoped<IRepositoryJoya, RepositoryJoya>();
@@ -157,7 +161,6 @@ app.UseAuthorization();
 
 app.UseSerilogRequestLogging();
 
-app.UseAuthorization();
 
 app.MapStaticAssets();
 app.UseAntiforgery();
