@@ -22,6 +22,7 @@ namespace Maven.Infraestructure.Repository.Interfaces
         Task<ICollection<Subasta>> GetBorradoresByVendedorAsync(int vendedorId);
 
         Task<ICollection<Subasta>> GetPublicadasParaActivarAsync();
+        Task<ICollection<Subasta>> GetActivasParaCerrarAsync();
         Task SaveChangesAsync();
 
         Task<ICollection<Subasta>> ListVisiblesAsync();

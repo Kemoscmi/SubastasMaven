@@ -2,55 +2,294 @@
 @{
     ViewData["Title"] = "Detalle de Subasta";
     var origen = ViewBag.Origen as string;
+
+    string estadoClase = "bg-secondary";
+    if (Model.EstadoActual?.ToUpper() == "ACTIVA")
+    {
+        estadoClase = "bg-success";
+    }
+    else if (Model.EstadoActual?.ToUpper() == "FINALIZADA")
+    {
+        estadoClase = "bg-dark";
+    }
+    else if (Model.EstadoActual?.ToUpper() == "PUBLICADA")
+    {
+        estadoClase = "bg-primary";
+    }
+    else if (Model.EstadoActual?.ToUpper() == "CANCELADA")
+    {
+        estadoClase = "bg-danger";
+    }
+
+    bool sinPujas = Model.CantidadPujas == 0;
+    bool finalizada = Model.Finalizada || (Model.EstadoActual?.ToUpper() == "FINALIZADA");
 }
 
-<h2 class="mb-3">Detalle de Subasta #@Model.SubastaId</h2>
+<style>
+    .subasta-page-title {
+        font-weight: 700;
+        letter-spacing: .2px;
+    }
 
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    .subasta-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        overflow: hidden;
+    }
+
+        .subasta-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f1f1;
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+
+        .subasta-card .card-body {
+            padding: 1.25rem;
+        }
+
+    .subasta-main-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 14px;
+    }
+
+    .subasta-placeholder {
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #d9d9d9;
+        border-radius: 14px;
+        color: #7a7a7a;
+        background: #fafafa;
+        font-weight: 500;
+    }
+
+    .subasta-label {
+        font-size: .92rem;
+        color: #6c757d;
+        margin-bottom: .15rem;
+    }
+
+    .subasta-value {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .subasta-value-strong {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .puja-actual {
+        color: #198754;
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .lider-box {
+        background: #f8fafc;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .lider-nombre {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .contador-box {
+        background: linear-gradient(135deg, #fff5f5, #fff);
+        border: 1px solid #f3d6d6;
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+    }
+
+    .contador-texto {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 1px;
+    }
+
+    .contador-activo {
+        color: #dc3545;
+    }
+
+    .contador-finalizado {
+        color: #495057;
+    }
+
+    .chip-categoria {
+        display: inline-block;
+        padding: .4rem .7rem;
+        margin: .15rem .25rem .15rem 0;
+        border-radius: 999px;
+        background: #f4f4f5;
+        color: #222;
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .estado-badge {
+        font-size: .82rem;
+        padding: .55rem .8rem;
+        border-radius: 999px;
+        letter-spacing: .3px;
+    }
+
+    .tiempo-real-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .45rem .8rem;
+        border-radius: 999px;
+        background: #eefaf2;
+        color: #198754;
+        font-size: .86rem;
+        font-weight: 700;
+        border: 1px solid #d8f1e1;
+    }
+
+    .tiempo-real-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #198754;
+        display: inline-block;
+    }
+
+    .historial-title {
+        font-weight: 700;
+    }
+
+    .tabla-historial thead th {
+        background: #f8f9fa;
+        font-weight: 700;
+        border-bottom-width: 1px;
+    }
+
+    .tabla-historial tbody tr:hover {
+        background: #fcfcfd;
+    }
+
+    .mensaje-finalizada {
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    }
+
+    .sin-pujas-box {
+        border-radius: 16px;
+        border: 1px dashed #cfd4da;
+        background: #fafafa;
+        padding: 1.2rem;
+        text-align: center;
+        color: #6c757d;
+    }
+
+        .sin-pujas-box i {
+            font-size: 1.8rem;
+            margin-bottom: .5rem;
+            display: block;
+        }
+
+    .maven-back {
+        text-decoration: none;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div>
+        <h2 class="mb-1 subasta-page-title">Detalle de Subasta #@Model.SubastaId</h2>
+        <div class="text-muted">Visualización completa de la subasta en tiempo real</div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="badge @estadoClase estado-badge" id="estadoBadge">@Model.EstadoActual</span>
+
+        <div class="tiempo-real-pill" id="estadoConexion">
+            <span class="tiempo-real-dot"></span>
+            Tiempo real conectado
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="subastaId" value="@Model.SubastaId" />
+<input type="hidden" id="fechaCierreIso" value="@Model.FechaCierre.ToString("yyyy-MM-ddTHH:mm:ss")" />
+
+<div id="alertaTiempoReal" class="mb-3"></div>
+
+@if (finalizada)
+{
+    <div class="alert mensaje-finalizada mb-4">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-flag-fill fs-4 text-dark"></i>
+            <div>
+                <div class="fw-bold mb-1">Subasta finalizada</div>
+                <div class="text-muted">
+                    Esta subasta ya alcanzó su fecha de cierre. La información mostrada corresponde al resultado final disponible.
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card subasta-card h-100">
             <div class="card-body">
                 @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
                 {
-                    <img src="@Model.ImagenUrl" class="img-fluid rounded" style="width:100%; height:320px; object-fit:cover;" />
+                    <img src="@Model.ImagenUrl" class="subasta-main-image" alt="Imagen de la joya" />
                 }
                 else
                 {
-                    <div class="border rounded p-4 text-muted text-center" style="height:320px; display:flex; align-items:center; justify-content:center;">
-                        Sin imagen
+                    <div class="subasta-placeholder">
+                        Sin imagen disponible
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    <div class="col-md-8">
-        <div class="card shadow-sm mb-3">
-            <div class="card-header bg-body">
+    <div class="col-lg-8">
+        <div class="card subasta-card mb-4">
+            <div class="card-header">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-gem"></i>
-                    <strong>Objeto subastado</strong>
+                    <span>Objeto subastado</span>
                 </div>
             </div>
 
             <div class="card-body">
-                <h4 class="mb-1">@Model.NombreJoya</h4>
-                <p class="text-muted mb-3">@Model.DescripcionJoya</p>
+                <h3 class="mb-2 fw-bold">@Model.NombreJoya</h3>
+                <p class="text-muted mb-4">@Model.DescripcionJoya</p>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="small text-muted">Condición</div>
-                        <div class="fw-semibold">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="subasta-label">Condición</div>
+                        <div class="subasta-value">
                             @(string.IsNullOrWhiteSpace(Model.Condicion) ? "Sin condición" : Model.Condicion)
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="small text-muted">Categorías</div>
-                        <div class="fw-semibold">
+                    <div class="col-md-8">
+                        <div class="subasta-label">Categorías</div>
+                        <div class="subasta-value">
                             @if (Model.Categorias.Any())
                             {
-                                @string.Join(", ", Model.Categorias)
+                                @foreach (var categoria in Model.Categorias)
+                                {
+                                    <span class="chip-categoria">@categoria</span>
+                                }
                             }
                             else
                             {
@@ -62,79 +301,142 @@
             </div>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-body">
+        <div class="card subasta-card">
+            <div class="card-header">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-hammer"></i>
-                    <strong>Información de la subasta</strong>
+                    <span>Información de la subasta</span>
                 </div>
             </div>
 
             <div class="card-body">
-                <div class="row g-3">
+                <div class="row g-4 mb-4">
                     <div class="col-md-6">
-                        <div class="small text-muted">Fecha inicio</div>
-                        <div class="fw-semibold">@Model.FechaInicio.ToString("dd/MM/yyyy HH:mm")</div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="small text-muted">Fecha cierre</div>
-                        <div class="fw-semibold">@Model.FechaCierre.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div class="subasta-label">Fecha inicio</div>
+                        <div class="subasta-value">@Model.FechaInicio.ToString("dd/MM/yyyy HH:mm")</div>
                     </div>
 
                     <div class="col-md-6">
-                        <div class="small text-muted">Precio base</div>
-                        <div class="fw-semibold">₡@Model.PrecioBase.ToString("N0")</div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="small text-muted">Incremento mínimo</div>
-                        <div class="fw-semibold">₡@Model.IncrementoMinimo.ToString("N0")</div>
+                        <div class="subasta-label">Fecha cierre</div>
+                        <div class="subasta-value">@Model.FechaCierre.ToString("dd/MM/yyyy HH:mm")</div>
                     </div>
 
                     <div class="col-md-6">
-                        <div class="small text-muted">Estado actual</div>
-                        <div class="fw-semibold">@Model.EstadoActual</div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="small text-muted">Cantidad total de pujas</div>
-                        <div class="fw-semibold">@Model.CantidadPujas</div>
+                        <div class="subasta-label">Precio base</div>
+                        <div class="subasta-value">₡@Model.PrecioBase.ToString("N0")</div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="small text-muted">Vendedor</div>
-                        <div class="fw-semibold">@Model.Vendedor</div>
+                    <div class="col-md-6">
+                        <div class="subasta-label">Incremento mínimo</div>
+                        <div class="subasta-value">₡@Model.IncrementoMinimo.ToString("N0")</div>
                     </div>
                 </div>
 
-                <hr class="my-3" />
+                <div class="row g-4 align-items-stretch">
+                    <div class="col-md-6">
+                        <div class="h-100">
+                            <div class="subasta-label">Puja actual</div>
+                            <div class="puja-actual" id="pujaActual">
+                                @if (Model.TienePujas)
+                                {
+                                    @:₡@Model.PujaActual.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-muted fs-5">Sin pujas</span>
+                                }
+                            </div>
 
-                <a class="btn btn-outline-secondary"
-                   asp-action="HistorialPujas"
-                   asp-route-id="@Model.SubastaId"
-                   asp-route-origen="@origen"
-                   asp-route-desdeDetalle="true">
-                    <i class="bi bi-clock-history me-1"></i>Ver historial de pujas
-                </a>
+                            <div class="mt-4 subasta-label">Vendedor</div>
+                            <div class="subasta-value">@Model.Vendedor</div>
+
+                            <div class="mt-4 subasta-label">Cantidad total de pujas</div>
+                            <div class="subasta-value-strong" id="cantidadPujas">@Model.CantidadPujas</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="lider-box mb-3">
+                            <div class="subasta-label">Usuario líder</div>
+                            <div class="lider-nombre" id="usuarioLider">@Model.UsuarioLider</div>
+                        </div>
+
+                        <div class="contador-box">
+                            <div class="subasta-label">Tiempo restante</div>
+                            <div class="contador-texto" id="contadorSubasta">Calculando...</div>
+
+                            <div class="mt-3 subasta-label">Estado actual</div>
+                            <div class="subasta-value-strong" id="estadoActual">@Model.EstadoActual</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h5 class="mb-0 historial-title">Historial de pujas</h5>
+
+                    <a class="btn btn-outline-secondary btn-sm"
+                       asp-action="HistorialPujas"
+                       asp-route-id="@Model.SubastaId"
+                       asp-route-origen="@origen"
+                       asp-route-desdeDetalle="true">
+                        <i class="bi bi-clock-history me-1"></i>Ver historial completo
+                    </a>
+                </div>
+
+                <div id="sinPujasBox" class="@(sinPujas ? "" : "d-none")">
+                    <div class="sin-pujas-box">
+                        <i class="bi bi-inbox"></i>
+                        <div class="fw-bold mb-1">Todavía no hay pujas registradas</div>
+                        <div>Cuando se registre la primera puja, aparecerá aquí automáticamente.</div>
+                    </div>
+                </div>
+
+                <div id="tablaHistorialWrapper" class="table-responsive @(sinPujas ? "d-none" : "")">
+                    <table class="table table-bordered table-hover align-middle tabla-historial mb-0">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Monto ofertado</th>
+                                <th>Fecha y hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyHistorial">
+                            @foreach (var p in Model.HistorialPujas)
+                            {
+                                <tr>
+                                    <td>@p.Usuario</td>
+                                    <td>₡@p.MontoOfertado.ToString("N0")</td>
+                                    <td>@p.FechaHora.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
                     @if (origen == "finalizadas")
                     {
-                        <a class="maven-back" asp-action="Finalizadas">
+                        <a class="btn btn-outline-dark" asp-action="Finalizadas">
                             ← Volver a subastas finalizadas
                         </a>
                     }
                     else if (origen == "borradores")
                     {
-                        <a class="maven-back" asp-action="Borradores">
+                        <a class="btn btn-outline-dark" asp-action="Borradores">
                             ← Volver a subastas editables
                         </a>
                     }
                     else if (origen == "index")
                     {
-                        <a class="maven-back" asp-action="Index">
+                        <a class="btn btn-outline-dark" asp-action="Index">
                             ← Volver a todas las subastas
                         </a>
                     }
                     else
                     {
-                        <a class="maven-back" asp-action="Activas">
+                        <a class="btn btn-outline-dark" asp-action="Activas">
                             ← Volver a subastas activas
                         </a>
                     }
@@ -143,3 +445,207 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+    <script>
+        const subastaId = parseInt(document.getElementById("subastaId").value);
+        const fechaCierre = new Date(document.getElementById("fechaCierreIso").value);
+
+        const contador = document.getElementById("contadorSubasta");
+        const pujaActual = document.getElementById("pujaActual");
+        const usuarioLider = document.getElementById("usuarioLider");
+        const cantidadPujas = document.getElementById("cantidadPujas");
+        const estadoActual = document.getElementById("estadoActual");
+        const estadoBadge = document.getElementById("estadoBadge");
+        const tbodyHistorial = document.getElementById("tbodyHistorial");
+        const alertaTiempoReal = document.getElementById("alertaTiempoReal");
+        const estadoConexion = document.getElementById("estadoConexion");
+        const sinPujasBox = document.getElementById("sinPujasBox");
+        const tablaHistorialWrapper = document.getElementById("tablaHistorialWrapper");
+
+        function formatearMonto(monto) {
+            return "₡" + Number(monto).toLocaleString("es-CR", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+        }
+
+        function formatearFecha(fechaTexto) {
+            const fecha = new Date(fechaTexto);
+            const dd = String(fecha.getDate()).padStart(2, '0');
+            const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+            const yyyy = fecha.getFullYear();
+            const hh = String(fecha.getHours()).padStart(2, '0');
+            const mi = String(fecha.getMinutes()).padStart(2, '0');
+            const ss = String(fecha.getSeconds()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+        }
+
+        function aplicarEstadoVisual(estado) {
+            estadoActual.textContent = estado;
+            estadoBadge.textContent = estado;
+
+            estadoBadge.className = "badge estado-badge";
+
+            const estadoUpper = estado.toUpperCase();
+
+            if (estadoUpper === "ACTIVA") {
+                estadoBadge.classList.add("bg-success");
+            } else if (estadoUpper === "FINALIZADA") {
+                estadoBadge.classList.add("bg-dark");
+            } else if (estadoUpper === "PUBLICADA") {
+                estadoBadge.classList.add("bg-primary");
+            } else if (estadoUpper === "CANCELADA") {
+                estadoBadge.classList.add("bg-danger");
+            } else {
+                estadoBadge.classList.add("bg-secondary");
+            }
+        }
+
+        function actualizarContador() {
+            if (contador.textContent === "Finalizada") return;
+
+            const ahora = new Date();
+            const diferencia = fechaCierre - ahora;
+
+            if (diferencia <= 0) {
+                contador.textContent = "Finalizada";
+                contador.classList.remove("contador-activo");
+                contador.classList.add("contador-finalizado");
+
+                aplicarEstadoVisual("FINALIZADA");
+                return;
+            }
+
+            const horas = Math.floor(diferencia / (1000 * 60 * 60));
+            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+
+            contador.textContent =
+                `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+        }
+
+        function agregarFilaHistorial(data) {
+            sinPujasBox.classList.add("d-none");
+            tablaHistorialWrapper.classList.remove("d-none");
+
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>${data.usuario}</td>
+                <td>${formatearMonto(data.montoOfertado)}</td>
+                <td>${formatearFecha(data.fechaHora)}</td>
+            `;
+
+            tbodyHistorial.insertBefore(fila, tbodyHistorial.firstChild);
+        }
+
+        function mostrarAlerta(mensaje, tipo = "warning") {
+            alertaTiempoReal.innerHTML = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        actualizarContador();
+        setInterval(actualizarContador, 1000);
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/subastahub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.onreconnecting(() => {
+            estadoConexion.innerHTML = `
+                <span class="tiempo-real-dot" style="background:#dc3545;"></span>
+                Reconectando...
+            `;
+            estadoConexion.style.background = "#fff5f5";
+            estadoConexion.style.color = "#dc3545";
+            estadoConexion.style.borderColor = "#f5d0d0";
+        });
+
+        connection.onreconnected(() => {
+            estadoConexion.innerHTML = `
+                <span class="tiempo-real-dot"></span>
+                Tiempo real conectado
+            `;
+            estadoConexion.style.background = "#eefaf2";
+            estadoConexion.style.color = "#198754";
+            estadoConexion.style.borderColor = "#d8f1e1";
+        });
+
+        connection.onclose(() => {
+            estadoConexion.innerHTML = `
+                <span class="tiempo-real-dot" style="background:#6c757d;"></span>
+                Desconectado
+            `;
+            estadoConexion.style.background = "#f1f3f5";
+            estadoConexion.style.color = "#6c757d";
+            estadoConexion.style.borderColor = "#dee2e6";
+        });
+
+        connection.on("PujaRegistrada", function (data) {
+            pujaActual.textContent = formatearMonto(data.montoOfertado);
+            usuarioLider.textContent = data.usuario;
+            cantidadPujas.textContent = data.cantidadPujas;
+            agregarFilaHistorial(data);
+        });
+
+        connection.on("LiderActualizado", function (data) {
+            usuarioLider.textContent = data.usuario;
+            pujaActual.textContent = formatearMonto(data.montoActual);
+        });
+
+        connection.on("HistorialActualizado", function (data) {
+            agregarFilaHistorial(data);
+            cantidadPujas.textContent = data.cantidadPujas;
+        });
+
+        connection.on("PujaSuperada", function (data) {
+            mostrarAlerta(data.mensaje, "warning");
+        });
+
+        connection.on("SubastaFinalizada", function (data) {
+            aplicarEstadoVisual(data.estado || "FINALIZADA");
+
+            contador.textContent = "Finalizada";
+            contador.classList.remove("contador-activo");
+            contador.classList.add("contador-finalizado");
+
+            if (data.usuarioGanador && data.usuarioGanador.trim() !== "") {
+                usuarioLider.textContent = data.usuarioGanador;
+            }
+
+            if (data.montoFinal && Number(data.montoFinal) > 0) {
+                pujaActual.textContent = formatearMonto(data.montoFinal);
+            }
+
+            mostrarAlerta("La subasta ha finalizado automáticamente.", "secondary");
+        });
+
+        connection.start()
+            .then(function () {
+                return connection.invoke("UnirseASubasta", subastaId);
+            })
+            .catch(function (err) {
+                console.error(err.toString());
+                estadoConexion.innerHTML = `
+                    <span class="tiempo-real-dot" style="background:#dc3545;"></span>
+                    Error de conexión
+                `;
+                estadoConexion.style.background = "#fff5f5";
+                estadoConexion.style.color = "#dc3545";
+                estadoConexion.style.borderColor = "#f5d0d0";
+            });
+
+        window.addEventListener("beforeunload", function () {
+            if (connection.state === signalR.HubConnectionState.Connected) {
+                connection.invoke("SalirDeSubasta", subastaId);
+            }
+        });
+    </script>
+}

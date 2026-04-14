@@ -20,7 +20,6 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.ListVisiblesAsync();
             return View(data);
         }
@@ -145,21 +144,18 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Activas()
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.GetActivasAsync();
             return View(data);
         }
 
         public async Task<IActionResult> Finalizadas()
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.GetFinalizadasAsync();
             return View(data);
         }
 
         public async Task<IActionResult> DetalleVisual(int id, string? origen)
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.GetDetalleVisualAsync(id);
             ViewBag.Origen = origen;
             return View(data);
@@ -167,7 +163,6 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> HistorialPujas(int id, string? origen, bool desdeDetalle = false)
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.GetHistorialPujasAsync(id);
             ViewBag.Origen = origen;
             ViewBag.SubastaId = id;
@@ -205,7 +200,6 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Borradores()
         {
-            await RevisarEstadosAutomaticosAsync();
             var data = await _service.GetBorradoresByVendedorAsync(UsuarioVendedorSimuladoId);
             return View(data);
         }
@@ -240,11 +234,6 @@ namespace Maven.Web.Controllers
             }
 
             return RedirectToAction(nameof(Index));
-        }
-
-        private async Task RevisarEstadosAutomaticosAsync()
-        {
-            await _service.ActivarPublicadasAsync();
         }
     }
 }

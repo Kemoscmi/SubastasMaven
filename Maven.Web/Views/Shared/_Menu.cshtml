@@ -23,20 +23,35 @@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle mj-navlink" href="#" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle mj-navlink" href="#" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-gear-fill me-1"></i>Proceso
                         </a>
-                        <ul class="dropdown-menu mj-dd">
+                        <ul class="dropdown-menu">
+
+                            <!-- Crear -->
                             <li>
-                                <a class="dropdown-item" asp-controller="Subasta" asp-action="Activas">
-                                    Subastas activas
+                                <a class="dropdown-item fw-semibold text-primary" asp-action="Create" asp-controller="Subasta">
+                                    <i class="bi bi-plus-circle me-2"></i>Crear subasta
                                 </a>
                             </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <!-- Activas -->
                             <li>
-                                <a class="dropdown-item" asp-controller="Subasta" asp-action="Finalizadas">
-                                    Subastas finalizadas
+                                <a class="dropdown-item" asp-action="Activas" asp-controller="Subasta">
+                                    <i class="bi bi-lightning-charge me-2"></i>Subastas activas
                                 </a>
                             </li>
+
+                            <!-- Finalizadas -->
+                            <li>
+                                <a class="dropdown-item" asp-action="Finalizadas" asp-controller="Subasta">
+                                    <i class="bi bi-check-circle me-2"></i>Subastas finalizadas
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
                 }

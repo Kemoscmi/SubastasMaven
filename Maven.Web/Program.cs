@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using System.Text;
+using Maven.Web.Hubs;
+using Maven.Web.Services;
 
 
 Directory.CreateDirectory("Logs");
@@ -61,6 +63,8 @@ builder.Host.UseSerilog(Log.Logger);
 
 // MVC
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<SubastaBackgroundService>();
 
 // =======================
 // Dependency Injection (Maven)
@@ -167,4 +171,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapHub<SubastaHub>("/subastahub");
 app.Run();
