@@ -30,8 +30,6 @@ namespace Maven.Application.DTOs
 
         [DisplayName("Fecha y Hora")]
         public DateTime FechaHora { get; set; }
-
-       
         public SubastaDTO Subasta { get; set; } = new();
         public UsuarioDTO Comprador { get; set; } = new();
     

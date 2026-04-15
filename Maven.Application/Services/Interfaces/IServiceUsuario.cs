@@ -13,5 +13,8 @@ namespace Maven.Application.Services.Interfaces
         Task<UsuarioDTO?> LoginAsync(string correo, string password);
 
         Task CambiarEstadoAsync(int usuarioId, int estadoUsuarioId);
+
+
+
     }
 }
