@@ -302,11 +302,11 @@ namespace Maven.Web.Controllers
                     liderAnteriorId.Value != usuarioActualId &&
                     liderAnteriorId.Value != detalleDespues.UsuarioLiderId)
                 {
-                    await _hubContext.Clients.User(liderAnteriorId.Value.ToString())
-                        .SendAsync("PujaSuperada", new
-                        {
-                            mensaje = "Tu puja ha sido superada."
-                        });
+                    await _hubContext.Clients.Group($"usuario-{liderAnteriorId.Value}")
+                    .SendAsync("PujaSuperada", new
+                    {
+                        mensaje = "⚠️ Tu puja ha sido superada."
+                    });
                 }
 
                 return Json(new
