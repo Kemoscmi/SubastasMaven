@@ -26,5 +26,6 @@
 
         public List<PujaHistorialDTO> HistorialPujas { get; set; } = new();
         public bool TienePujas { get; set; }
+        public int? UsuarioLiderId { get; set; }
     }
 }

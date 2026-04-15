@@ -51,8 +51,10 @@ namespace Maven.Application.Services.Implementations
                     throw new KeyNotFoundException("La subasta no existe.");
 
                 // 🔹 VALIDACIÓN 1: Subasta activa
-                if (subasta.EstadoSubastaId != 3) // 3 = Activa (ajústalo si tu id es otro)
-                    throw new InvalidOperationException("La subasta no está activa.");
+                var ahora = DateTime.Now;
+
+                if (subasta.EstadoSubastaId != 3 || ahora >= subasta.FechaCierre)
+                    throw new InvalidOperationException("La subasta ya no está disponible para recibir pujas.");
 
                 // 🔹 VALIDACIÓN 2: No puede ser el vendedor
                 if (subasta.VendedorId == usuarioActualId)

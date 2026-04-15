@@ -114,10 +114,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddDbContext<MavenContext>(options =>
 {
-    options.UseSqlServer(connectionString, sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure();
-    });
+    options.UseSqlServer(connectionString);
 
     if (builder.Environment.IsDevelopment())
         options.EnableSensitiveDataLogging();

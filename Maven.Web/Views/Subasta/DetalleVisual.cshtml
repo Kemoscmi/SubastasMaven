@@ -23,6 +23,9 @@
 
     bool sinPujas = Model.CantidadPujas == 0;
     bool finalizada = Model.Finalizada || (Model.EstadoActual?.ToUpper() == "FINALIZADA");
+    bool cancelada = Model.EstadoActual?.ToUpper() == "CANCELADA";
+    bool cerrada = finalizada || cancelada;
+    bool huboPujas = Model.CantidadPujas > 0;
 }
 
 <style>
@@ -204,6 +207,38 @@
     .maven-back {
         text-decoration: none;
     }
+
+    .puja-final-card {
+        border: 1px solid #ece7df;
+        background: linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
+    }
+
+        .puja-final-card .card-header {
+            background: linear-gradient(90deg, #fff8ef 0%, #ffffff 100%);
+            border-bottom: 1px solid #f2e8da;
+        }
+
+    .puja-input {
+        border-radius: 14px;
+        border: 1px solid #d6dbe1;
+        box-shadow: none;
+    }
+
+        .puja-input:focus {
+            border-color: #c8a96b;
+            box-shadow: 0 0 0 .15rem rgba(200, 169, 107, 0.15);
+        }
+
+    #btnRegistrarPuja {
+        border-radius: 14px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        min-height: 56px;
+    }
+
+    #mensajePuja .alert {
+        border-radius: 14px;
+    }
 </style>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
@@ -227,21 +262,38 @@
 
 <div id="alertaTiempoReal" class="mb-3"></div>
 
-@if (finalizada)
+@if (cerrada)
 {
     <div class="alert mensaje-finalizada mb-4">
         <div class="d-flex align-items-start gap-3">
             <i class="bi bi-flag-fill fs-4 text-dark"></i>
             <div>
-                <div class="fw-bold mb-1">Subasta finalizada</div>
-                <div class="text-muted">
-                    Esta subasta ya alcanzó su fecha de cierre. La información mostrada corresponde al resultado final disponible.
-                </div>
+                @if (finalizada && huboPujas)
+                {
+                    <div class="fw-bold mb-1">Subasta finalizada con ganador</div>
+                    <div class="text-muted">
+                        Ganador: <strong>@Model.UsuarioLider</strong><br />
+                        Monto final: <strong>₡@Model.PujaActual.ToString("N0")</strong>
+                    </div>
+                }
+                else if (finalizada && !huboPujas)
+                {
+                    <div class="fw-bold mb-1">Subasta finalizada sin ofertas</div>
+                    <div class="text-muted">
+                        Esta subasta llegó a su fecha de cierre, pero no recibió pujas.
+                    </div>
+                }
+                else if (cancelada)
+                {
+                    <div class="fw-bold mb-1">Subasta cancelada</div>
+                    <div class="text-muted">
+                        Esta subasta fue cancelada y ya no admite nuevas pujas.
+                    </div>
+                }
             </div>
         </div>
     </div>
 }
-
 <div class="row g-4">
     <div class="col-lg-4">
         <div class="card subasta-card h-100">
@@ -385,15 +437,18 @@
                     </a>
                 </div>
 
-                <div id="sinPujasBox" class="@(sinPujas ? "" : "d-none")">
-                    <div class="sin-pujas-box">
-                        <i class="bi bi-inbox"></i>
-                        <div class="fw-bold mb-1">Todavía no hay pujas registradas</div>
-                        <div>Cuando se registre la primera puja, aparecerá aquí automáticamente.</div>
+                @if (!cerrada)
+                {
+                    <div id="sinPujasBox" class="@(sinPujas ? "" : "d-none")">
+                        <div class="sin-pujas-box">
+                            <i class="bi bi-inbox"></i>
+                            <div class="fw-bold mb-1">Todavía no hay pujas registradas</div>
+                            <div>Cuando se registre la primera puja, aparecerá aquí automáticamente.</div>
+                        </div>
                     </div>
-                </div>
+                }
 
-                <div id="tablaHistorialWrapper" class="table-responsive @(sinPujas ? "d-none" : "")">
+                <div id="tablaHistorialWrapper" class="table-responsive @((sinPujas || cancelada && !huboPujas) ? "d-none" : "")">
                     <table class="table table-bordered table-hover align-middle tabla-historial mb-0">
                         <thead>
                             <tr>
@@ -414,6 +469,96 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if (!finalizada && Model.EstadoActual?.ToUpper() == "ACTIVA")
+                {
+                    <div id="contenedorPuja" class="card subasta-card mt-4 puja-final-card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-cash-stack"></i>
+                                <span>Realizar nueva puja</span>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="subasta-label">Puja actual</div>
+                                <div class="puja-actual mb-2" id="pujaActualFooter">
+                                    @if (Model.TienePujas)
+                                    {
+                                        @:₡@Model.PujaActual.ToString("N0")
+                                    }
+                                    else
+                                    {
+                                        @:₡@Model.PrecioBase.ToString("N0")
+                                    }
+                                </div>
+
+                                <div class="form-text">
+                                    La nueva oferta debe ser mayor a la actual y respetar el incremento mínimo de
+                                    <strong>₡@Model.IncrementoMinimo.ToString("N0")</strong>.
+                                </div>
+                            </div>
+
+                            <form id="formPuja" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="SubastaId" value="@Model.SubastaId" />
+
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-lg-8">
+                                        <label class="form-label fw-semibold">Monto ofertado</label>
+                                        <input type="number"
+                                               step="1"
+                                               min="1"
+                                               class="form-control form-control-lg puja-input"
+                                               id="montoOfertado"
+                                               name="MontoOfertado"
+                                               placeholder="Ingrese su oferta"
+                                               inputmode="numeric" />
+                                    </div>
+
+                                    <div class="col-lg-4 d-grid">
+                                        <button type="submit" class="btn btn-dark btn-lg" id="btnRegistrarPuja">
+                                            <i class="bi bi-hammer me-1"></i> Registrar puja
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div id="mensajePuja" class="mt-3"></div>
+                        </div>
+                    </div>
+                }
+                else if (cerrada)
+                {
+                    <div class="card subasta-card mt-4">
+                        <div class="card-body text-center py-4">
+                            <i class="bi bi-flag-fill fs-2 text-dark mb-2 d-block"></i>
+
+                            @if (finalizada && huboPujas)
+                            {
+                                <h5 class="fw-bold mb-2">Resultado final registrado</h5>
+                                <p class="text-muted mb-0">
+                                    La subasta cerró correctamente y ya no admite nuevas pujas.
+                                </p>
+                            }
+                            else if (finalizada && !huboPujas)
+                            {
+                                <h5 class="fw-bold mb-2">Subasta finalizada sin pujas</h5>
+                                <p class="text-muted mb-0">
+                                    No se registraron ofertas durante el tiempo de la subasta.
+                                </p>
+                            }
+                            else if (cancelada)
+                            {
+                                <h5 class="fw-bold mb-2">Subasta cancelada</h5>
+                                <p class="text-muted mb-0">
+                                    Esta subasta ya no se encuentra disponible para participar.
+                                </p>
+                            }
+                        </div>
+                    </div>
+                }
 
                 <div class="mt-4">
                     @if (origen == "finalizadas")
@@ -455,6 +600,7 @@
 
         const contador = document.getElementById("contadorSubasta");
         const pujaActual = document.getElementById("pujaActual");
+        const pujaActualFooter = document.getElementById("pujaActualFooter");
         const usuarioLider = document.getElementById("usuarioLider");
         const cantidadPujas = document.getElementById("cantidadPujas");
         const estadoActual = document.getElementById("estadoActual");
@@ -464,6 +610,11 @@
         const estadoConexion = document.getElementById("estadoConexion");
         const sinPujasBox = document.getElementById("sinPujasBox");
         const tablaHistorialWrapper = document.getElementById("tablaHistorialWrapper");
+        const montoInput = document.getElementById("montoOfertado");
+        const formPuja = document.getElementById("formPuja");
+        const btnRegistrarPuja = document.getElementById("btnRegistrarPuja");
+        const mensajePuja = document.getElementById("mensajePuja");
+        const contenedorPuja = document.getElementById("contenedorPuja");
 
         function formatearMonto(monto) {
             return "₡" + Number(monto).toLocaleString("es-CR", {
@@ -550,6 +701,16 @@
             `;
         }
 
+        function mostrarMensajePuja(mensaje, tipo = "danger") {
+            if (!mensajePuja) return;
+
+            mensajePuja.innerHTML = `
+                <div class="alert alert-${tipo} mb-0" role="alert">
+                    ${mensaje}
+                </div>
+            `;
+        }
+
         actualizarContador();
         setInterval(actualizarContador, 1000);
 
@@ -589,7 +750,12 @@
         });
 
         connection.on("PujaRegistrada", function (data) {
-            pujaActual.textContent = formatearMonto(data.montoOfertado);
+            pujaActual.innerHTML = formatearMonto(data.montoOfertado);
+
+            if (pujaActualFooter) {
+                pujaActualFooter.innerHTML = formatearMonto(data.montoOfertado);
+            }
+
             usuarioLider.textContent = data.usuario;
             cantidadPujas.textContent = data.cantidadPujas;
             agregarFilaHistorial(data);
@@ -597,7 +763,11 @@
 
         connection.on("LiderActualizado", function (data) {
             usuarioLider.textContent = data.usuario;
-            pujaActual.textContent = formatearMonto(data.montoActual);
+            pujaActual.innerHTML = formatearMonto(data.montoActual);
+
+            if (pujaActualFooter) {
+                pujaActualFooter.innerHTML = formatearMonto(data.montoActual);
+            }
         });
 
         connection.on("HistorialActualizado", function (data) {
@@ -609,22 +779,54 @@
             mostrarAlerta(data.mensaje, "warning");
         });
 
-        connection.on("SubastaFinalizada", function (data) {
+                     connection.on("SubastaFinalizada", function (data) {
             aplicarEstadoVisual(data.estado || "FINALIZADA");
 
             contador.textContent = "Finalizada";
             contador.classList.remove("contador-activo");
             contador.classList.add("contador-finalizado");
 
-            if (data.usuarioGanador && data.usuarioGanador.trim() !== "") {
+            if (contenedorPuja) {
+                contenedorPuja.classList.add("d-none");
+            }
+
+            let mensajeHtml = "";
+
+            if (!data.sinPujas && data.usuarioGanador && data.usuarioGanador.trim() !== "") {
                 usuarioLider.textContent = data.usuarioGanador;
+
+                if (data.montoFinal && Number(data.montoFinal) > 0) {
+                    pujaActual.innerHTML = formatearMonto(data.montoFinal);
+
+                    if (pujaActualFooter) {
+                        pujaActualFooter.innerHTML = formatearMonto(data.montoFinal);
+                    }
+                }
+
+                mensajeHtml = `
+                    <div class="alert alert-success shadow-sm border-0" role="alert">
+                        <div class="fw-bold mb-1">🎉 Subasta finalizada</div>
+                        <div>Ganador: <strong>${data.usuarioGanador}</strong></div>
+                        <div>Monto final: <strong>${formatearMonto(data.montoFinal)}</strong></div>
+                    </div>
+                `;
+            } else {
+                usuarioLider.textContent = "Sin ganador";
+                pujaActual.innerHTML = `<span class="text-muted fs-5">Sin pujas</span>`;
+
+                if (pujaActualFooter) {
+                    pujaActualFooter.innerHTML = `<span class="text-muted fs-6">Sin pujas</span>`;
+                }
+
+                mensajeHtml = `
+                    <div class="alert alert-secondary shadow-sm border-0" role="alert">
+                        <div class="fw-bold mb-1">Subasta finalizada</div>
+                        <div>No se registraron pujas en esta subasta.</div>
+                    </div>
+                `;
             }
 
-            if (data.montoFinal && Number(data.montoFinal) > 0) {
-                pujaActual.textContent = formatearMonto(data.montoFinal);
-            }
-
-            mostrarAlerta("La subasta ha finalizado automáticamente.", "secondary");
+            alertaTiempoReal.innerHTML = mensajeHtml;
         });
 
         connection.start()
@@ -641,6 +843,59 @@
                 estadoConexion.style.color = "#dc3545";
                 estadoConexion.style.borderColor = "#f5d0d0";
             });
+
+        if (formPuja) {
+            formPuja.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                mensajePuja.innerHTML = "";
+                btnRegistrarPuja.disabled = true;
+
+                try {
+                    let monto = montoInput.value;
+
+                    monto = monto.replace(",", ".");
+
+                    montoInput.value = parseFloat(monto);
+
+                    const formData = new FormData(formPuja);
+
+                    const response = await fetch('@Url.Action("RegistrarPuja", "Subasta")', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+
+                    const contentType = response.headers.get("content-type") || "";
+                    const rawText = await response.text();
+
+                    let data = null;
+
+                    if (contentType.includes("application/json")) {
+                        data = JSON.parse(rawText);
+                    } else {
+                        console.error("Respuesta no JSON:", rawText);
+                        mostrarMensajePuja("El servidor devolvió una respuesta inesperada. Revisá la consola.", "danger");
+                        return;
+                    }
+
+                    if (!response.ok || !data.ok) {
+                        mostrarMensajePuja(data.mensaje || "No se pudo registrar la puja.", "danger");
+                        return;
+                    }
+
+                    document.getElementById("montoOfertado").value = "";
+                    mostrarMensajePuja(data.mensaje, "success");
+                }
+                catch (error) {
+                    console.error("Error al registrar puja:", error);
+                    mostrarMensajePuja("Ocurrió un error al registrar la puja.", "danger");
+                }
+                finally {
+                    btnRegistrarPuja.disabled = false;
+                }
+            });
+        }
 
         window.addEventListener("beforeunload", function () {
             if (connection.state === signalR.HubConnectionState.Connected) {
