@@ -5,6 +5,7 @@ using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenModels;
 using Maven.Infraestructure.Repository.Interfaces;
 
+
 namespace Maven.Application.Services.Implementations
 {
     public class ServiceSubasta : IServiceSubasta
@@ -251,6 +252,7 @@ namespace Maven.Application.Services.Implementations
                 TienePujas = pujasOrdenadas.Any(),
                 PujaActual = pujaLider?.MontoOfertado ?? 0,
                 UsuarioLider = pujaLider?.Comprador?.NombreCompleto ?? "Sin usuario líder",
+                UsuarioLiderId = pujaLider?.CompradorId,
 
                 Finalizada = s.EstadoSubastaId == 4 || s.EstadoSubastaId == 5,
                 HistorialPujas = s.Puja?
@@ -380,45 +382,86 @@ namespace Maven.Application.Services.Implementations
             return subastas.Count;
         }
 
-        public async Task<int> CerrarSubastasVencidasAsync()
+        public async Task<ICollection<SubastaCierreTiempoRealDTO>> CerrarSubastasVencidasAsync()
         {
             var subastas = await _repository.GetActivasParaCerrarAsync();
 
+            var resultadoTiempoReal = new List<SubastaCierreTiempoRealDTO>();
+
             if (subastas == null || !subastas.Any())
-                return 0;
+                return resultadoTiempoReal;
 
             foreach (var subasta in subastas)
             {
-                // Si ya tenía resultado, solo aseguramos estado y seguimos
+                // Si ya tenía resultado, solo aseguramos estado y armamos respuesta
                 if (subasta.SubastaResultado != null)
                 {
-                    subasta.EstadoSubastaId = 4; // Finalizada
+                    subasta.EstadoSubastaId = 4;
                     subasta.EstadoSubasta = null!;
+
+                    resultadoTiempoReal.Add(new SubastaCierreTiempoRealDTO
+                    {
+                        SubastaId = subasta.SubastaId,
+                        Estado = "FINALIZADA",
+                        UsuarioGanador = subasta.SubastaResultado.Ganador?.NombreCompleto,
+                        MontoFinal = subasta.SubastaResultado.MontoFinal,
+                        SinPujas = subasta.SubastaResultado.GanadorId == null
+                    });
+
                     continue;
                 }
 
-                // Regla: gana la puja de mayor monto.
-                // En empate, gana la más temprana.
+                // Regla: mayor monto; si empatan, gana la más temprana
                 var pujaGanadora = subasta.Puja?
                     .OrderByDescending(p => p.MontoOfertado)
                     .ThenBy(p => p.FechaHora)
                     .FirstOrDefault();
 
-                subasta.EstadoSubastaId = 4; // Finalizada
+                subasta.EstadoSubastaId = 4;
                 subasta.EstadoSubasta = null!;
 
                 subasta.SubastaResultado = new SubastaResultado
                 {
                     SubastaId = subasta.SubastaId,
                     GanadorId = pujaGanadora?.CompradorId,
-                    PujaGanadoraId = pujaGanadora?.PujaId
+                    MontoFinal = pujaGanadora?.MontoOfertado,
+                    PujaGanadoraId = pujaGanadora?.PujaId,
+                    FechaCierre = subasta.FechaCierre
                 };
+
+                if (pujaGanadora != null)
+                {
+                    var pagoExistente = await _repositoryPago.FindBySubastaIdAsync(subasta.SubastaId);
+
+                    if (pagoExistente == null)
+                    {
+                        var pago = new Pago
+                        {
+                            SubastaId = subasta.SubastaId,
+                            CompradorId = pujaGanadora.CompradorId,
+                            VendedorId = subasta.VendedorId,
+                            Monto = pujaGanadora.MontoOfertado,
+                            FechaRegistro = DateTime.Now,
+                            EstadoPagoId = 1
+                        };
+
+                        await _repositoryPago.AddAsync(pago);
+                    }
+                }
+
+                resultadoTiempoReal.Add(new SubastaCierreTiempoRealDTO
+                {
+                    SubastaId = subasta.SubastaId,
+                    Estado = "FINALIZADA",
+                    UsuarioGanador = pujaGanadora?.Comprador?.NombreCompleto,
+                    MontoFinal = pujaGanadora?.MontoOfertado,
+                    SinPujas = pujaGanadora == null
+                });
             }
 
             await _repository.SaveChangesAsync();
-            return subastas.Count;
+            return resultadoTiempoReal;
         }
-
 
 
         public async Task<ICollection<SubastaDTO>> ListVisiblesAsync()

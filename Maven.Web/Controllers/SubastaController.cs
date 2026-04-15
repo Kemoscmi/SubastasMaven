@@ -4,18 +4,33 @@ using Maven.Application.Services.Interfaces;
 using Maven.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Maven.Web.Hubs;
 
 namespace Maven.Web.Controllers
 {
+    [Authorize]
     public class SubastaController : Controller
     {
         private readonly IServiceSubasta _service;
+        private readonly IServicePuja _servicePuja;
+        private readonly IUsuarioActualService _usuarioActualService;
+        private readonly IHubContext<SubastaHub> _hubContext;
+
         private const int UsuarioVendedorSimuladoId = 3;
         private const string UsuarioVendedorSimuladoNombre = "Daniel Rojas Solís";
 
-        public SubastaController(IServiceSubasta service)
+        public SubastaController(
+            IServiceSubasta service,
+            IServicePuja servicePuja,
+            IUsuarioActualService usuarioActualService,
+            IHubContext<SubastaHub> hubContext)
         {
             _service = service;
+            _servicePuja = servicePuja;
+            _usuarioActualService = usuarioActualService;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -234,6 +249,80 @@ namespace Maven.Web.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarPuja(RegistrarPujaDTO dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errores = ModelState
+                        .Where(x => x.Value?.Errors.Count > 0)
+                        .SelectMany(x => x.Value!.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
+                        .ToList();
+
+                    return BadRequest(new
+                    {
+                        ok = false,
+                        mensaje = string.Join(" | ", errores)
+                    });
+                }
+
+                var detalleAntes = await _service.GetDetalleVisualAsync(dto.SubastaId);
+
+                var liderAnteriorId = detalleAntes.UsuarioLiderId;
+
+                var pujaRegistrada = await _servicePuja.RegistrarPujaAsync(dto);
+
+                var detalleDespues = await _service.GetDetalleVisualAsync(dto.SubastaId);
+
+                var usuarioActualId = _usuarioActualService.GetUsuarioId();
+                var nombreUsuarioActual = _usuarioActualService.GetNombreUsuario() ?? "Usuario actual";
+
+                await _hubContext.Clients.Group($"subasta-{dto.SubastaId}")
+                    .SendAsync("PujaRegistrada", new
+                    {
+                        usuario = nombreUsuarioActual,
+                        montoOfertado = dto.MontoOfertado,
+                        fechaHora = pujaRegistrada.FechaHora,
+                        cantidadPujas = detalleDespues.CantidadPujas
+                    });
+
+                await _hubContext.Clients.Group($"subasta-{dto.SubastaId}")
+                    .SendAsync("LiderActualizado", new
+                    {
+                        usuario = detalleDespues.UsuarioLider,
+                        montoActual = detalleDespues.PujaActual
+                    });
+
+                if (liderAnteriorId.HasValue &&
+                    liderAnteriorId.Value != usuarioActualId &&
+                    liderAnteriorId.Value != detalleDespues.UsuarioLiderId)
+                {
+                    await _hubContext.Clients.User(liderAnteriorId.Value.ToString())
+                        .SendAsync("PujaSuperada", new
+                        {
+                            mensaje = "Tu puja ha sido superada."
+                        });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "Puja registrada correctamente."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    ok = false,
+                    mensaje = ex.Message
+                });
+            }
         }
     }
 }
