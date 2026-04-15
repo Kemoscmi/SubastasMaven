@@ -82,6 +82,8 @@ builder.Services.AddScoped<IServiceSubasta, ServiceSubasta>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUsuarioActualService, UsuarioActualService>();
 builder.Services.AddScoped<IServicePuja, ServicePuja>();
+builder.Services.AddScoped<IServicePago, ServicePago>();
+builder.Services.AddScoped<IServicePago, ServicePago>();
 
 // Repositories
 builder.Services.AddScoped<IRepositoryJoya, RepositoryJoya>();

@@ -1,0 +1,257 @@
+﻿@model Maven.Application.DTOs.PagoDTO
+
+@{
+    ViewData["Title"] = "Detalle del Pago";
+
+    string estadoClase = "bg-secondary";
+    string estadoTexto = "Desconocido";
+    string iconoEstado = "bi-question-circle";
+
+    if (Model.EstadoPagoId == 1)
+    {
+        estadoClase = "bg-warning text-dark";
+        estadoTexto = "Pendiente";
+        iconoEstado = "bi-hourglass-split";
+    }
+    else if (Model.EstadoPagoId == 2)
+    {
+        estadoClase = "bg-success";
+        estadoTexto = "Confirmado";
+        iconoEstado = "bi-check-circle-fill";
+    }
+}
+
+<style>
+    .pago-page-title {
+        font-weight: 700;
+        letter-spacing: .2px;
+    }
+
+    .pago-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        overflow: hidden;
+    }
+
+        .pago-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f1f1;
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+
+        .pago-card .card-body {
+            padding: 1.5rem;
+        }
+
+    .pago-label {
+        font-size: .92rem;
+        color: #6c757d;
+        margin-bottom: .2rem;
+    }
+
+    .pago-value {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .pago-monto {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #198754;
+        line-height: 1;
+    }
+
+    .pago-box {
+        background: #f8fafc;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .pago-estado-badge {
+        font-size: .9rem;
+        padding: .55rem .85rem;
+        border-radius: 999px;
+        letter-spacing: .2px;
+    }
+
+    .pago-resumen {
+        border: 1px solid #ece7df;
+        background: linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
+        border-radius: 18px;
+        padding: 1.2rem;
+    }
+
+    .pago-fecha-vacia {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .btn-pago {
+        border-radius: 14px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        min-height: 48px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="mb-1 pago-page-title">Detalle del Pago</h2>
+        <div class="text-muted">Información del pago generado por la subasta #@Model.SubastaId</div>
+    </div>
+
+    <div>
+        <span class="badge pago-estado-badge @estadoClase">
+            <i class="bi @iconoEstado me-1"></i>@estadoTexto
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card pago-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-credit-card-2-front"></i>
+                    <span>Información del pago</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="pago-resumen mb-4">
+                    <div class="pago-label">Monto total</div>
+                    <div class="pago-monto">₡ @Model.Monto.ToString("N2")</div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Subasta</div>
+                            <div class="pago-value">#@Model.SubastaId</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Estado del pago</div>
+                            <div class="pago-value">@estadoTexto</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Comprador</div>
+                            <div class="pago-value">Usuario #@Model.CompradorId</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Vendedor</div>
+                            <div class="pago-value">Usuario #@Model.VendedorId</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Fecha de registro</div>
+                            <div class="pago-value">@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pago-box">
+                            <div class="pago-label">Fecha de confirmación</div>
+                            <div class="pago-value">
+                                @if (Model.FechaConfirmacion.HasValue)
+                                {
+                                    @Model.FechaConfirmacion.Value.ToString("dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="pago-fecha-vacia">Aún no confirmada</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    @if (Model.EstadoPagoId == 1)
+                    {
+                        <form asp-action="Confirmar" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="subastaId" value="@Model.SubastaId" />
+                            <button type="submit" class="btn btn-success btn-pago">
+                                <i class="bi bi-check2-circle me-1"></i> Confirmar pago
+                            </button>
+                        </form>
+                    }
+
+                    <a asp-controller="Subasta"
+                       asp-action="DetalleVisual"
+                       asp-route-id="@Model.SubastaId"
+                       class="btn btn-outline-secondary btn-pago">
+                        <i class="bi bi-arrow-left me-1"></i> Volver a la subasta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card pago-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-receipt"></i>
+                    <span>Resumen</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="pago-label">Subasta asociada</div>
+                    <div class="pago-value">#@Model.SubastaId</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="pago-label">Monto final adjudicado</div>
+                    <div class="pago-value">₡ @Model.Monto.ToString("N2")</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="pago-label">Estado actual</div>
+                    <div>
+                        <span class="badge pago-estado-badge @estadoClase">
+                            <i class="bi @iconoEstado me-1"></i>@estadoTexto
+                        </span>
+                    </div>
+                </div>
+
+                <hr />
+
+                @if (Model.EstadoPagoId == 1)
+                {
+                    <div class="alert alert-warning mb-0" role="alert" style="border-radius:14px;">
+                        <div class="fw-bold mb-1">Pago pendiente</div>
+                        <div>Este pago aún no ha sido confirmado en el sistema.</div>
+                    </div>
+                }
+                else if (Model.EstadoPagoId == 2)
+                {
+                    <div class="alert alert-success mb-0" role="alert" style="border-radius:14px;">
+                        <div class="fw-bold mb-1">Pago confirmado</div>
+                        <div>El pago ya fue confirmado correctamente.</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

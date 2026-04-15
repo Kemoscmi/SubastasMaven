@@ -15,6 +15,8 @@ namespace Maven.Application.Services.Implementations
         private readonly IRepositorySubastaResultado _repositorySubastaResultado;
         private readonly IRepositoryPago _repositoryPago;
 
+
+
         public ServiceSubasta(
       IRepositorySubasta repository,
       IRepositorySubastaResultado repositorySubastaResultado,
