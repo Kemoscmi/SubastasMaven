@@ -807,10 +807,6 @@
             cantidadPujas.textContent = data.cantidadPujas;
         });
 
-        connection.on("PujaSuperada", function (data) {
-            mostrarAlerta(data.mensaje, "warning");
-        });
-
                          connection.on("SubastaFinalizada", function (data) {
             aplicarEstadoVisual(data.estado || "FINALIZADA");
 

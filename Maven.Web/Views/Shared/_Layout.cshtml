@@ -29,6 +29,8 @@
         @await Html.PartialAsync("_Menu")
     </header>
 
+    <div id="alertaGlobalTiempoReal" class="container mt-3"></div>
+
     <main id="mainContent" class="flex-grow-1">
         <div class="container py-3">
             @RenderBody()
@@ -53,5 +55,37 @@
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+    <script>
+        (function () {
+            const alertaGlobal = document.getElementById("alertaGlobalTiempoReal");
+
+            if (!alertaGlobal) return;
+
+            function mostrarAlertaGlobal(mensaje, tipo = "warning") {
+                alertaGlobal.innerHTML = `
+                    <div class="alert alert-${tipo} alert-dismissible fade show shadow-sm" role="alert">
+                        ${mensaje}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            }
+
+            const connectionGlobal = new signalR.HubConnectionBuilder()
+                .withUrl("/subastahub")
+                .withAutomaticReconnect()
+                .build();
+
+            connectionGlobal.on("PujaSuperada", function (data) {
+                mostrarAlertaGlobal(data.mensaje || "⚠️ Tu puja ha sido superada.", "warning");
+            });
+
+            connectionGlobal.start().catch(function (err) {
+                console.error("Error en conexión global SignalR:", err.toString());
+            });
+        })();
+    </script>
 </body>
 </html>
