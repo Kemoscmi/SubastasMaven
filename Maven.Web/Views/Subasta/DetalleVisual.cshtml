@@ -470,9 +470,9 @@
                     </table>
                 </div>
 
-                @if (!finalizada && Model.EstadoActual?.ToUpper() == "ACTIVA")
+                @if (!cerrada)
                 {
-                    <div id="contenedorPuja" class="card subasta-card mt-4 puja-final-card">
+                    <div id="contenedorPuja" class="card subasta-card mt-4 puja-final-card @(Model.EstadoActual?.ToUpper() == "ACTIVA" ? "" : "d-none")">
                         <div class="card-header">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="bi bi-cash-stack"></i>
@@ -591,6 +591,32 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="modalSubastaFinalizada" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 22px; overflow: hidden;">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div style="width:72px;height:72px;border-radius:50%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                        <i class="bi bi-trophy-fill fs-2 text-warning"></i>
+                    </div>
+                </div>
+
+                <h4 class="fw-bold mb-2" id="modalTituloSubasta">Subasta finalizada</h4>
+                <p class="text-muted mb-3" id="modalTextoSubasta">
+                    La subasta ha concluido correctamente.
+                </p>
+
+                <div id="modalDetalleGanador" class="mb-3"></div>
+
+                <button type="button" class="btn btn-dark px-4" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 
@@ -615,6 +641,12 @@
         const btnRegistrarPuja = document.getElementById("btnRegistrarPuja");
         const mensajePuja = document.getElementById("mensajePuja");
         const contenedorPuja = document.getElementById("contenedorPuja");
+
+        const modalElemento = document.getElementById("modalSubastaFinalizada");
+        const modalTituloSubasta = document.getElementById("modalTituloSubasta");
+        const modalTextoSubasta = document.getElementById("modalTextoSubasta");
+        const modalDetalleGanador = document.getElementById("modalDetalleGanador");
+        const modalSubastaFinalizada = modalElemento ? new bootstrap.Modal(modalElemento) : null;
 
         function formatearMonto(monto) {
             return "₡" + Number(monto).toLocaleString("es-CR", {
@@ -779,7 +811,7 @@
             mostrarAlerta(data.mensaje, "warning");
         });
 
-                     connection.on("SubastaFinalizada", function (data) {
+                         connection.on("SubastaFinalizada", function (data) {
             aplicarEstadoVisual(data.estado || "FINALIZADA");
 
             contador.textContent = "Finalizada";
@@ -810,6 +842,19 @@
                         <div>Monto final: <strong>${formatearMonto(data.montoFinal)}</strong></div>
                     </div>
                 `;
+
+                if (modalTituloSubasta) modalTituloSubasta.textContent = "¡Subasta finalizada!";
+                if (modalTextoSubasta) modalTextoSubasta.textContent = "Ya no se pueden registrar nuevas pujas.";
+                if (modalDetalleGanador) {
+                    modalDetalleGanador.innerHTML = `
+                        <div class="p-3 rounded-4 bg-light">
+                            <div class="fw-bold mb-1">Ganador</div>
+                            <div class="fs-5">${data.usuarioGanador}</div>
+                            <div class="mt-2 text-muted">Monto final</div>
+                            <div class="fs-5 fw-bold text-success">${formatearMonto(data.montoFinal)}</div>
+                        </div>
+                    `;
+                }
             } else {
                 usuarioLider.textContent = "Sin ganador";
                 pujaActual.innerHTML = `<span class="text-muted fs-5">Sin pujas</span>`;
@@ -824,9 +869,33 @@
                         <div>No se registraron pujas en esta subasta.</div>
                     </div>
                 `;
+
+                if (modalTituloSubasta) modalTituloSubasta.textContent = "Subasta finalizada";
+                if (modalTextoSubasta) modalTextoSubasta.textContent = "Esta subasta terminó sin recibir ofertas.";
+                if (modalDetalleGanador) {
+                    modalDetalleGanador.innerHTML = `
+                        <div class="p-3 rounded-4 bg-light text-muted">
+                            No hubo ganador porque no se registraron pujas.
+                        </div>
+                    `;
+                }
             }
 
             alertaTiempoReal.innerHTML = mensajeHtml;
+
+            if (modalSubastaFinalizada) {
+                modalSubastaFinalizada.show();
+            }
+        });
+
+                connection.on("SubastaActivada", function (data) {
+            aplicarEstadoVisual(data.estado || "ACTIVA");
+
+            if (contenedorPuja) {
+                contenedorPuja.classList.remove("d-none");
+            }
+
+            mostrarAlerta("La subasta ya está activa y puede recibir pujas.", "success");
         });
 
         connection.start()

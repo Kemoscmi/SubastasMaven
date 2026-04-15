@@ -365,21 +365,29 @@ namespace Maven.Application.Services.Implementations
             await _repository.UpdateAsync(entity);
         }
 
-        public async Task<int> ActivarPublicadasAsync()
+        public async Task<ICollection<SubastaActivadaTiempoRealDTO>> ActivarPublicadasAsync()
         {
             var subastas = await _repository.GetPublicadasParaActivarAsync();
 
+            var activadas = new List<SubastaActivadaTiempoRealDTO>();
+
             if (subastas == null || !subastas.Any())
-                return 0;
+                return activadas;
 
             foreach (var subasta in subastas)
             {
-                subasta.EstadoSubastaId = 3; 
+                subasta.EstadoSubastaId = 3; // Activa
                 subasta.EstadoSubasta = null!;
+
+                activadas.Add(new SubastaActivadaTiempoRealDTO
+                {
+                    SubastaId = subasta.SubastaId,
+                    Estado = "ACTIVA"
+                });
             }
 
             await _repository.SaveChangesAsync();
-            return subastas.Count;
+            return activadas;
         }
 
         public async Task<ICollection<SubastaCierreTiempoRealDTO>> CerrarSubastasVencidasAsync()

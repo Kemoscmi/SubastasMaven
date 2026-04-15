@@ -37,6 +37,15 @@ namespace Maven.Web.Services
                     var activadas = await serviceSubasta.ActivarPublicadasAsync();
                     var cerradas = await serviceSubasta.CerrarSubastasVencidasAsync();
 
+                    foreach (var subasta in activadas)
+                    {
+                        await _hubContext.Clients.Group($"subasta-{subasta.SubastaId}")
+                            .SendAsync("SubastaActivada", new
+                            {
+                                estado = subasta.Estado
+                            }, stoppingToken);
+                    }
+
                     foreach (var subasta in cerradas)
                     {
                         await _hubContext.Clients.Group($"subasta-{subasta.SubastaId}")
@@ -49,11 +58,11 @@ namespace Maven.Web.Services
                             }, stoppingToken);
                     }
 
-                    if (activadas > 0 || cerradas.Count > 0)
+                    if (activadas.Count > 0 || cerradas.Count > 0)
                     {
                         _logger.LogInformation(
                             "Subastas procesadas. Activadas: {Activadas}. Cerradas: {Cerradas}.",
-                            activadas,
+                            activadas.Count,
                             cerradas.Count);
                     }
                 }
