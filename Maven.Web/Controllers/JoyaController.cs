@@ -50,7 +50,14 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var data = await _service.ListAsync();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out int usuarioId))
+            {
+                return Unauthorized();
+            }
+
+            var data = await _service.GetByVendedorAsync(usuarioId);
             return View(data.ToList());
         }
 

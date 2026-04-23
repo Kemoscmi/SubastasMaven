@@ -47,6 +47,9 @@ namespace Maven.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
+            var usuarioId = _usuarioActualService.GetUsuarioId();
+            var nombreUsuario = _usuarioActualService.GetNombreUsuario();
+
             var ahora = DateTime.Now.AddMinutes(20);
 
             var dto = new SubastaDTO
@@ -54,10 +57,13 @@ namespace Maven.Web.Controllers
                 FechaInicio = ahora,
                 FechaCierre = ahora.AddHours(2),
                 EstadoSubastaId = 1,
-                VendedorId = 3
+                VendedorId = usuarioId
             };
 
             var vm = await ConstruirSubastaFormVmAsync(dto);
+
+            ViewBag.UsuarioVendedorNombre = nombreUsuario;
+
             return View(vm);
         }
 
@@ -83,7 +89,10 @@ namespace Maven.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SubastaFormViewModel vm)
         {
-            vm.Subasta.VendedorId = UsuarioVendedorSimuladoId;
+            var usuarioId = _usuarioActualService.GetUsuarioId();
+            var nombreUsuario = _usuarioActualService.GetNombreUsuario();
+
+            vm.Subasta.VendedorId = usuarioId;
             vm.Subasta.EstadoSubastaId = 1;
 
             LimpiarValidacionesSubasta();
@@ -91,7 +100,7 @@ namespace Maven.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
-                ViewBag.UsuarioVendedorNombre = UsuarioVendedorSimuladoNombre;
+                ViewBag.UsuarioVendedorNombre = nombreUsuario;
                 return View(vmRecargado);
             }
 
@@ -105,15 +114,19 @@ namespace Maven.Web.Controllers
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
                 var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
-                ViewBag.UsuarioVendedorNombre = UsuarioVendedorSimuladoNombre;
+                ViewBag.UsuarioVendedorNombre = nombreUsuario;
                 return View(vmRecargado);
             }
         }
-
         public async Task<IActionResult> Edit(int id)
         {
             var dto = await _service.FindByIdAsync(id);
             var vm = await ConstruirSubastaFormVmAsync(dto);
+
+            ViewBag.UsuarioVendedorNombre = dto.Vendedor?.NombreCompleto
+                ?? _usuarioActualService.GetNombreUsuario()
+                ?? "Usuario autenticado";
+
             return View(vm);
         }
 
@@ -126,6 +139,7 @@ namespace Maven.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                ViewBag.UsuarioVendedorNombre = _usuarioActualService.GetNombreUsuario() ?? "Usuario autenticado";
                 return View(vmRecargado);
             }
 
@@ -139,6 +153,7 @@ namespace Maven.Web.Controllers
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
                 var vmRecargado = await ConstruirSubastaFormVmAsync(vm.Subasta);
+                ViewBag.UsuarioVendedorNombre = _usuarioActualService.GetNombreUsuario() ?? "Usuario autenticado";
                 return View(vmRecargado);
             }
         }
@@ -187,7 +202,9 @@ namespace Maven.Web.Controllers
 
         private async Task<SubastaFormViewModel> ConstruirSubastaFormVmAsync(SubastaDTO? dto = null)
         {
-            var combos = await _service.GetCombosAsync();
+            var usuarioId = _usuarioActualService.GetUsuarioId();
+
+            var combos = await _service.GetCombosByVendedorAsync(usuarioId);
 
             return new SubastaFormViewModel
             {
@@ -212,10 +229,10 @@ namespace Maven.Web.Controllers
                 })
             };
         }
-
         public async Task<IActionResult> Borradores()
         {
-            var data = await _service.GetBorradoresByVendedorAsync(UsuarioVendedorSimuladoId);
+            var usuarioId = _usuarioActualService.GetUsuarioId();
+            var data = await _service.GetBorradoresByVendedorAsync(usuarioId);
             return View(data);
         }
 

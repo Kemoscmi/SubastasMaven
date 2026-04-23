@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Reporte de Subastas Finalizadas";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2 class="mb-1">Reporte de Subastas Finalizadas</h2>
+        <div class="text-muted">
+            Consulta y descarga el resultado de las subastas finalizadas en el sistema
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <strong>Filtros</strong>
+        </div>
+
+        <div class="card-body">
+            <form method="get" asp-controller="Reporte" asp-action="SubastasFinalizadasPdf" class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Fecha inicio</label>
+                    <input type="date" name="fechaInicio" class="form-control" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Fecha fin</label>
+                    <input type="date" name="fechaFin" class="form-control" required />
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-danger w-100">
+                        Descargar PDF
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

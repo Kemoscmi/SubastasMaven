@@ -68,12 +68,14 @@ else
 
                     <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
                         <div class="d-flex justify-content-between gap-2">
-                            <a class="btn btn-sm btn-outline-secondary"
-                               asp-action="Edit"
-                               asp-route-id="@j.JoyaId">
-                                Editar
-                            </a>
-
+                            @if (j.EstadoObjeto?.NombreEstado != "EN_SUBASTA")
+                            {
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   asp-action="Edit"
+                                   asp-route-id="@j.JoyaId">
+                                    Editar
+                                </a>
+                            }
                             <a class="btn btn-sm btn-outline-primary"
                                asp-action="Detalle"
                                asp-route-id="@j.JoyaId">
