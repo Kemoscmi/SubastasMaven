@@ -16,7 +16,7 @@ namespace Maven.Application.DTOs.Subasta
 
         [DisplayName("Monto ofertado")]
         [Required(ErrorMessage = "El monto ofertado es requerido")]
-        [Range(typeof(decimal), "0.01", "999999999999.99", ErrorMessage = "El monto debe ser mayor a cero")]
+        [Range(typeof(decimal), "1", "999999999999,99", ErrorMessage = "El monto debe ser mayor a cero")]
         public decimal MontoOfertado { get; set; }
     }
 }

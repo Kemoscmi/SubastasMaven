@@ -14,7 +14,7 @@ namespace Maven.Web.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"usuario-{usuarioId}");
             }
 
-            await base.OnConnectedAsync();
+            await base.OnConnectedAsync();  
         }
         public async Task UnirseASubasta(int subastaId)
         {

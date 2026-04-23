@@ -7,7 +7,7 @@
     if (Model.EstadoActual?.ToUpper() == "ACTIVA")
     {
         estadoClase = "bg-success";
-    }
+    } 
     else if (Model.EstadoActual?.ToUpper() == "FINALIZADA")
     {
         estadoClase = "bg-dark";
@@ -15,7 +15,7 @@
     else if (Model.EstadoActual?.ToUpper() == "PUBLICADA")
     {
         estadoClase = "bg-primary";
-    }
+    } 
     else if (Model.EstadoActual?.ToUpper() == "CANCELADA")
     {
         estadoClase = "bg-danger";
@@ -621,6 +621,7 @@
                 <button type="button" class="btn btn-dark px-4" data-bs-dismiss="modal">
                     Entendido
                 </button>
+                </div>
             </div>
         </div>
     </div>
@@ -631,9 +632,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 
     <script>
+        //Busca elementos y los convierte en diferentes datis
         const subastaId = parseInt(document.getElementById("subastaId").value);
         const fechaCierre = new Date(document.getElementById("fechaCierreIso").value);
 
+        //Guarda elementos para mostrar datos 
         const contador = document.getElementById("contadorSubasta");
         const pujaActual = document.getElementById("pujaActual");
         const pujaActualFooter = document.getElementById("pujaActualFooter");
@@ -802,7 +805,7 @@
 
             usuarioLider.textContent = data.usuario;
             cantidadPujas.textContent = data.cantidadPujas;
-            agregarFilaHistorial(data);
+                (data);
         });
 
         connection.on("LiderActualizado", function (data) {
@@ -819,7 +822,7 @@
             cantidadPujas.textContent = data.cantidadPujas;
         });
 
-                         connection.on("SubastaFinalizada", function (data) {
+        connection.on("SubastaFinalizada", function (data) {
             aplicarEstadoVisual(data.estado || "FINALIZADA");
 
             contador.textContent = "Finalizada";

@@ -15,7 +15,7 @@ namespace Maven.Web.Services
 
         public SubastaBackgroundService(
             IServiceScopeFactory scopeFactory,
-            ILogger<SubastaBackgroundService> logger,
+            ILogger<SubastaBackgroundService> logger, 
             IHubContext<SubastaHub> hubContext)
         {
             _scopeFactory = scopeFactory;

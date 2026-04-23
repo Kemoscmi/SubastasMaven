@@ -33,12 +33,12 @@ namespace Maven.Application.DTOs
 
         [DisplayName("Precio Base")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [Range(typeof(decimal), "0.01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
+        [Range(typeof(decimal), "1", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
         public decimal PrecioBase { get; set; }
 
         [DisplayName("Incremento Mínimo")]
         [Required(ErrorMessage = "{0} es un dato requerido")]
-        [Range(typeof(decimal), "0.01", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
+        [Range(typeof(decimal), "1", "999999999", ErrorMessage = "El {0} debe ser mayor a 0")]
         public decimal IncrementoMinimo { get; set; }
 
         [DisplayName("Estado de la Subasta")]
