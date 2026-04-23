@@ -1,0 +1,58 @@
+﻿@model Maven.Application.DTOs.UsuarioDTO
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container mt-5" style="max-width: 600px;">
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+            <h3 class="text-center fw-semibold mb-4">Mi Perfil</h3>
+
+            @if (TempData["MensajeExito"] != null)
+            {
+                <div class="alert alert-success text-center">
+                    <i class="bi bi-check-circle me-2"></i>
+                    @TempData["MensajeExito"]
+                </div>
+            }
+
+            <div class="mb-3">
+                <span class="text-muted">Nombre</span>
+                <p class="fw-semibold mb-0">@Model.NombreCompleto</p>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted">Correo</span>
+                <p class="fw-semibold mb-0">@Model.Correo</p>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted">Rol</span>
+                <p class="fw-semibold mb-0">@Model.Rol?.NombreRol</p>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted">Estado</span>
+                <p class="fw-semibold mb-0">@Model.EstadoUsuario?.NombreEstado</p>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-muted">Fecha de registro</span>
+                <p class="fw-semibold mb-0">
+                    @Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")
+                </p>
+            </div>
+
+            <div class="text-center">
+                <a asp-action="EditarMiPerfil" class="btn btn-primary px-4 rounded-pill">
+                    <i class="bi bi-pencil-square me-1"></i> Editar perfil
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>

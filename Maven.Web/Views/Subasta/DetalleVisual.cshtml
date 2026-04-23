@@ -259,7 +259,7 @@
 
 <input type="hidden" id="subastaId" value="@Model.SubastaId" />
 <input type="hidden" id="fechaCierreIso" value="@Model.FechaCierre.ToString("yyyy-MM-ddTHH:mm:ss")" />
-
+<input type="hidden" id="urlPagoDetalle" value="@Url.Action("Detalle", "Pago")" />
 <div id="alertaTiempoReal" class="mb-3"></div>
 
 @if (cerrada)
@@ -567,6 +567,8 @@
                     </div>
                 }
 
+                <div id="contenedorPostCierre"></div>
+
                 <div class="mt-4">
                     @if (origen == "finalizadas")
                     {
@@ -623,6 +625,7 @@
         </div>
     </div>
 </div>
+</div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
@@ -654,6 +657,8 @@
         const modalTextoSubasta = document.getElementById("modalTextoSubasta");
         const modalDetalleGanador = document.getElementById("modalDetalleGanador");
         const modalSubastaFinalizada = modalElemento ? new bootstrap.Modal(modalElemento) : null;
+        const contenedorPostCierre = document.getElementById("contenedorPostCierre");
+        const urlPagoDetalle = document.getElementById("urlPagoDetalle")?.value;
 
         function formatearMonto(monto) {
             return "₡" + Number(monto).toLocaleString("es-CR", {
@@ -858,6 +863,24 @@
                         </div>
                     `;
                 }
+
+        if (contenedorPostCierre && urlPagoDetalle) {
+            contenedorPostCierre.innerHTML = `
+                <div class="card subasta-card mt-4">
+                    <div class="card-body text-center py-4">
+                        <i class="bi bi-flag-fill fs-2 text-dark mb-2 d-block"></i>
+                        <h5 class="fw-bold mb-2">Resultado final registrado</h5>
+                        <p class="text-muted mb-3">
+                            La subasta cerró correctamente y ya no admite nuevas pujas.
+                        </p>
+                        <a href="${urlPagoDetalle}?subastaId=${subastaId}" class="btn btn-success">
+                            <i class="bi bi-credit-card me-1"></i> Ver pago
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
             } else {
                 usuarioLider.textContent = "Sin ganador";
                 pujaActual.innerHTML = `<span class="text-muted fs-5">Sin pujas</span>`;
@@ -882,6 +905,20 @@
                         </div>
                     `;
                 }
+
+        if (contenedorPostCierre) {
+            contenedorPostCierre.innerHTML = `
+                <div class="card subasta-card mt-4">
+                    <div class="card-body text-center py-4">
+                        <i class="bi bi-flag-fill fs-2 text-dark mb-2 d-block"></i>
+                        <h5 class="fw-bold mb-2">Subasta finalizada sin pujas</h5>
+                        <p class="text-muted mb-0">
+                            No se registraron ofertas durante el tiempo de la subasta.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
             }
 
             alertaTiempoReal.innerHTML = mensajeHtml;

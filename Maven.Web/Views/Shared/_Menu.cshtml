@@ -119,6 +119,14 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li>
+                                <a class="dropdown-item" asp-controller="Usuario" asp-action="MiPerfil">
+                                    Mi Perfil
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
                                 <a class="dropdown-item" asp-controller="Login" asp-action="LogOff">
                                     Salir
                                 </a>
