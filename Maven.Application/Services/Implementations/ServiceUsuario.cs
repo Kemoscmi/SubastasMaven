@@ -21,9 +21,16 @@ namespace Maven.Application.Services.Implementations
         public async Task<int> AddAsync(UsuarioDTO dto)
         {
             if (dto is null) throw new ArgumentNullException(nameof(dto));
+            var existente = await _repository.FindByEmailAsync(dto.Correo);
+
+            if (existente != null)
+                throw new Exception("Ya existe un usuario registrado con ese correo.");
+
 
             Usuario entity = _mapper.Map<Usuario>(dto);
 
+            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.PasswordHash);
+            entity.EstadoUsuarioId = 1;
             if (entity.FechaRegistro == default)
                 entity.FechaRegistro = DateTime.Now;
 
@@ -67,6 +74,11 @@ namespace Maven.Application.Services.Implementations
             if (dto is null)
                 throw new ArgumentNullException(nameof(dto));
 
+            var existente = await _repository.FindByEmailAsync(dto.Correo);
+
+            if (existente != null && existente.UsuarioId != id)
+                throw new Exception("Ya existe un usuario registrado con ese correo.");
+
             var entity = await _repository.FindByIdAsync(id);
 
             if (entity is null)
@@ -97,12 +109,14 @@ namespace Maven.Application.Services.Implementations
             if (usuario == null)
                 return null;
 
-            //  bool esValido = BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash);
+           
+            // Validar estado (bloqueado no entra)
+            if (usuario.EstadoUsuarioId != 1) // 1 = ACTIVO
+                return null;
 
-            // if (!esValido)
-            //  return null;
-
-            if (usuario.PasswordHash != password)
+            // Validar contraseña con hash
+            bool esValido = BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash);
+            if (!esValido)
                 return null;
 
             return _mapper.Map<UsuarioDTO>(usuario);

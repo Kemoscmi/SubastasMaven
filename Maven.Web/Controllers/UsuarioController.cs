@@ -1,13 +1,15 @@
 ﻿using Maven.Application.DTOs;
+using Maven.Application.Services.Implementations;
 using Maven.Application.Services.Interfaces;
 using Maven.Infraestructure.MavenData;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 namespace Maven.Web.Controllers
 {
-   
+
 
     [Authorize]
     public class UsuarioController : Controller
@@ -22,6 +24,7 @@ namespace Maven.Web.Controllers
         }
 
         // LISTAR
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index(string? filtro)
         {
             var data = await _service.ListAsync();
@@ -53,6 +56,7 @@ namespace Maven.Web.Controllers
         }
 
         // DETALLE
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Detalle(int id)
         {
             try
@@ -67,6 +71,7 @@ namespace Maven.Web.Controllers
         }
 
         // CREATE - GET
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Create()
         {
             await CargarCombosAsync();
@@ -74,21 +79,36 @@ namespace Maven.Web.Controllers
         }
 
         // CREATE - POST
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UsuarioDTO dto)
         {
+            ModelState.Remove("Rol.NombreRol");
+            ModelState.Remove("EstadoUsuario.NombreEstado");
+            ModelState.Remove("EstadoUsuarioId");
             if (!ModelState.IsValid)
             {
                 await CargarCombosAsync();
                 return View(dto);
             }
 
-            await _service.AddAsync(dto);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _service.AddAsync(dto);
+                TempData["MensajeExito"] = "Usuario registrado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                await CargarCombosAsync();
+                return View(dto);
+            }
         }
 
         // EDIT - GET
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Edit(int id)
         {
             try
@@ -102,7 +122,7 @@ namespace Maven.Web.Controllers
                 return NotFound();
             }
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, UsuarioDTO dto)
@@ -142,12 +162,28 @@ namespace Maven.Web.Controllers
                 return View(dto);
             }
 
-            await _service.UpdateAsync(id, dto);
+            try
+            {
+                await _service.UpdateAsync(id, dto);
+                TempData["DebugOk"] = $"Usuario {id} actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
 
-            TempData["DebugOk"] = $"Usuario {id} actualizado correctamente.";
-            return RedirectToAction(nameof(Index));
+                await CargarCombosAsync();
+
+                var usuarioActual = await _service.FindByIdAsync(id);
+                dto.Rol = usuarioActual.Rol;
+                dto.EstadoUsuario = usuarioActual.EstadoUsuario;
+                dto.FechaRegistro = usuarioActual.FechaRegistro;
+
+                return View(dto);
+            }
         }
         // DELETE - GET 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -162,6 +198,7 @@ namespace Maven.Web.Controllers
         }
 
         // DELETE - POST
+        [Authorize(Roles = "ADMIN")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -171,6 +208,7 @@ namespace Maven.Web.Controllers
         }
 
         // Combos Rol/Estado
+        [Authorize(Roles = "ADMIN")]
         private async Task CargarCombosAsync()
         {
             var roles = await _db.Rol.AsNoTracking()
@@ -185,7 +223,7 @@ namespace Maven.Web.Controllers
             ViewBag.EstadoUsuarioId = new SelectList(estados, "EstadoUsuarioId", "NombreEstado");
         }
 
-
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Bloquear(int id)
         {
             try
@@ -198,7 +236,7 @@ namespace Maven.Web.Controllers
                 return NotFound();
             }
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpPost, ActionName("Bloquear")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BloquearConfirmado(int id)
@@ -207,7 +245,7 @@ namespace Maven.Web.Controllers
             await _service.CambiarEstadoAsync(id, 2);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Activar(int id)
         {
             try
@@ -220,7 +258,7 @@ namespace Maven.Web.Controllers
                 return NotFound();
             }
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpPost, ActionName("Activar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActivarConfirmado(int id)
@@ -229,7 +267,7 @@ namespace Maven.Web.Controllers
             await _service.CambiarEstadoAsync(id, 1);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CambiarEstado(int id)
@@ -260,6 +298,55 @@ namespace Maven.Web.Controllers
             {
                 return NotFound();
             }
+        }
+
+        public async Task<IActionResult> MiPerfil()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return RedirectToAction("Index", "Login");
+
+            var usuario = await _service.FindByIdAsync(int.Parse(userId));
+
+            return View(usuario);
+        }
+
+        public async Task<IActionResult> EditarMiPerfil()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return RedirectToAction("Index", "Login");
+
+            var usuario = await _service.FindByIdAsync(int.Parse(userId));
+
+            return View(usuario);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarMiPerfil(UsuarioDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return RedirectToAction("Index", "Login");
+
+            if (dto.UsuarioId != int.Parse(userId))
+                return Forbid();
+            ModelState.Remove("Rol.NombreRol");
+            ModelState.Remove("EstadoUsuario.NombreEstado");
+
+            if (!ModelState.IsValid)
+                return View(dto);
+
+            await _service.UpdateAsync(dto.UsuarioId, dto);
+
+
+            TempData["MensajeExito"] = "Perfil actualizado correctamente.";
+            return RedirectToAction("MiPerfil");
         }
     }
 }
