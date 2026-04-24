@@ -20,12 +20,15 @@
             La joya no puede modificarse una vez creada la subasta.
         </div>
     </div>
-
-    <input type="hidden" asp-for="Subasta.VendedorId" value="3" />
+     
+    <input type="hidden" asp-for="Subasta.VendedorId" />
 
     <div class="mb-3">
         <label class="form-label">Vendedor asignado</label>
-        <input class="form-control" value="Daniel Rojas Solís" readonly />
+        <input class="form-control" value="@ViewBag.UsuarioVendedorNombre" readonly />
+        <div class="form-text">
+            Este usuario se asigna automáticamente según la sesión iniciada.
+        </div>
     </div>
 
     <div class="mb-3">

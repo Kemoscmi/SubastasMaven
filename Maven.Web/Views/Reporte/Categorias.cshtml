@@ -1,0 +1,193 @@
+﻿@model Maven.Web.ViewModels.ReporteCategoriasViewModel
+
+@{
+    ViewData["Title"] = "Reporte por Categoría";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="mb-1">Reporte de Subastas por Categoría</h2>
+            <div class="text-muted">Distribución de subastas según categoría de la joya</div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <strong>Filtros</strong>
+        </div>
+        <div class="card-body">
+            <form id="formCategorias" method="get" asp-controller="Reporte" asp-action="Categorias" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Fecha inicio</label>
+                    <input type="date" name="fechaInicio" class="form-control"
+                           value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Fecha fin</label>
+                    <input type="date" name="fechaFin" class="form-control"
+                           value="@Model.FechaFin?.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">
+                        Filtrar
+                    </button>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="btnPdfCategorias" class="btn btn-danger w-100">
+                        PDF
+                    </button>
+                </div>
+            </form>
+
+            <form id="formPdfCategorias" method="post" asp-controller="Reporte" asp-action="CategoriasPdf" style="display:none;">
+                <input type="hidden" name="FechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="FechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="GraficoBase64" id="GraficoBase64" />
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <strong>Resumen gráfico</strong>
+        </div>
+        <div class="card-body">
+            @if (!Model.FiltroAplicado)
+            {
+                <div class="text-muted text-center py-4">
+                    Selecciona un rango de fechas para visualizar el gráfico.
+                </div>
+            }
+            else if (Model.Datos.Any())
+            {
+                <canvas id="graficoCategorias" height="110"></canvas>
+            }
+            else
+            {
+                <div class="alert alert-secondary mb-0">
+                    No hay datos para el rango de fechas seleccionado.
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <strong>Detalle por categoría</strong>
+        </div>
+        <div class="card-body">
+            @if (Model.FiltroAplicado)
+            {
+                if (Model.Datos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Cantidad de subastas</th>
+                                    <th>Cantidad finalizadas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Datos)
+                                {
+                                    <tr>
+                                        <td>@item.Categoria</td>
+                                        <td>@item.CantidadSubastas</td>
+                                        <td>@item.CantidadFinalizadas</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary mb-0">
+                        No se encontraron subastas para ese periodo.
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @if (Model.Datos.Any())
+    {
+        <script>
+            const etiquetas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Datos.Select(x => x.Categoria)));
+            const totalSubastas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Datos.Select(x => x.CantidadSubastas)));
+            const totalFinalizadas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Datos.Select(x => x.CantidadFinalizadas)));
+
+            const ctx = document.getElementById('graficoCategorias').getContext('2d');
+
+            const graficoCategorias = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [
+                        {
+                            label: 'Subastas realizadas',
+                            data: totalSubastas,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Subastas finalizadas',
+                            data: totalFinalizadas,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribución de subastas por categoría'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('btnPdfCategorias').addEventListener('click', function () {
+                const canvas = document.getElementById('graficoCategorias');
+
+                if (!canvas) {
+                    alert('Primero debes generar el gráfico con un filtro.');
+                    return;
+                }
+
+                const base64 = canvas.toDataURL('image/png');
+                document.getElementById('GraficoBase64').value = base64;
+                document.getElementById('formPdfCategorias').submit();
+            });
+        </script>
+    }
+    else
+    {
+        <script>
+            document.getElementById('btnPdfCategorias').addEventListener('click', function () {
+                alert('Primero debes filtrar datos para generar el gráfico y luego exportarlo a PDF.');
+            });
+        </script>
+    }
+}
